@@ -49,6 +49,8 @@ nav ul li a {
   font-size:13px !important; white-space:nowrap !important; padding:4px 0;
 }
 nav ul li a:hover { color:#F5F3EF !important; }
+nav a svg, nav svg { display:block !important; width:38px !important; height:48px !important; min-width:38px !important; overflow:visible !important; }
+nav a svg path, nav a svg rect { visibility:visible !important; opacity:1 !important; }
 
 
 /* ─── HERO ─── */
@@ -478,9 +480,18 @@ footer {
 <!-- NAV -->
 <nav style="position:fixed;top:0;left:0;right:0;z-index:9999;display:flex;flex-direction:row;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(24,24,30,0.95);backdrop-filter:blur(24px);border-bottom:1px solid rgba(245,243,239,0.09);">
 
-  <!-- LOGO via Canvas - guaranteed rendering -->
-  <a href="#" onclick="return false;" style="display:flex;align-items:center;text-decoration:none;flex-shrink:0;">
-    <canvas id="logo-canvas" width="60" height="64" style="display:block;"></canvas>
+  <!-- LOGO: inline SVG variant 4 -->
+  <a href="#home" style="display:flex;align-items:center;text-decoration:none;flex-shrink:0;min-width:38px;height:48px;overflow:visible;">
+    <svg viewBox="0 0 229 290" width="38" height="48" style="display:block;flex-shrink:0;min-width:38px;" xmlns="http://www.w3.org/2000/svg">
+      <path d="M33.45 81.7998L33.45 171.95H109.65L109.65 192.8H8.1L8.1 81.7998H33.45Z" fill="#E42B95"/>
+      <path d="M227.96 153H206.84L196.64 134.16H140.6L130.4 153H109.28L157.4 64.2H179.84L227.96 153ZM168.68 82.44L149.48 117.72H187.76L168.68 82.44Z" fill="#14C1CA"/>
+      <path d="M116.3 63.25H140.3V145H116.3V134.2C108.4 143.2 96.35 147.7 80.15 147.7C68.75 147.7 59.85 143.85 53.45 136.15C47.05 128.35 43.85 115.3 43.85 97V63.25H67.85V96.55C67.85 102.95 68.35 108.55 69.35 113.35C70.35 118.15 72.55 122.25 75.95 125.65C79.45 128.95 84.65 130.6 91.55 130.6C101.55 130.6 108.15 127.35 111.35 120.85C114.65 114.25 116.3 105.9 116.3 95.8V63.25Z" fill="#FFD101"/>
+      <rect x="8" y="206" width="102" height="21" fill="#3258E7"/>
+      <rect x="8" y="193" width="129.7" height="26" transform="rotate(-90 8 193)" fill="#E42B95"/>
+      <path d="M109.5 153L110.3 140.9L116.3 139.9V153.9L109.5 153Z" fill="#F8F6F6"/>
+      <path d="M195 134H229V153H206.5L195 134Z" fill="#F8F6F6"/>
+      <path d="M140.302 226.75H116.302V145H140.302V155.8C148.202 146.8 160.252 142.3 176.452 142.3C187.852 142.3 196.752 146.15 203.152 153.85C209.552 161.65 212.752 174.7 212.752 193V226.75H188.752V193.45C188.752 187.05 188.252 181.45 187.252 176.65C186.252 171.85 184.052 167.75 180.652 164.35C177.152 161.05 171.952 159.4 165.052 159.4C155.052 159.4 148.452 162.65 145.252 169.15C141.952 175.75 140.302 184.1 140.302 194.2V226.75Z" fill="#7421E1"/>
+    </svg>
   </a>
 
   <!-- LINKS RIGHT -->
@@ -640,23 +651,23 @@ footer {
   <div class="price-grid">
     <div class="price-card">
       <div class="price-name">Старт</div>
-      <div class="price-val">30 000 ₽</div>
-      <div class="price-sub">в месяц · одно направление</div>
-      <ul class="price-list"><li>1 услуга на выбор</li><li>Базовая аналитика</li><li>Ежемесячный отчёт</li><li>Доступ к ИИ-ассистенту</li><li>Email-поддержка</li></ul>
+      <div class="price-val">от 50 000 ₽</div>
+      <div class="price-sub">в месяц · идеально для старта</div>
+      <ul class="price-list"><li>1 услуга на выбор</li><li>Аудит и стратегия</li><li>Ежемесячный отчёт</li><li>ИИ-ассистент</li><li>Поддержка в мессенджерах</li></ul>
       <a href="#contact" class="btn-outline" style="display:block;text-align:center;text-decoration:none;padding:13px;border-radius:100px;font-size:13px;">Выбрать</a>
     </div>
     <div class="price-card hot">
       <div class="hot-badge">Популярный</div>
       <div class="price-name">Бизнес</div>
-      <div class="price-val">80 000 ₽</div>
-      <div class="price-sub">в месяц · до 3 направлений</div>
-      <ul class="price-list"><li>До 3 услуг</li><li>Продвинутая аналитика</li><li>Еженедельные отчёты</li><li>ИИ-ассистент 24/7</li><li>Личный менеджер</li><li>Приоритетная поддержка</li></ul>
+      <div class="price-val">от 120 000 ₽</div>
+      <div class="price-sub">в месяц · для активного роста</div>
+      <ul class="price-list"><li>До 3 услуг</li><li>Стратегия и аналитика</li><li>Еженедельные отчёты</li><li>ИИ-ассистент 24/7</li><li>Личный менеджер</li><li>Приоритетная поддержка</li></ul>
       <a href="#contact" class="btn-pink" style="display:block;text-align:center;text-decoration:none;padding:13px;border-radius:100px;font-size:13px;">Выбрать</a>
     </div>
     <div class="price-card">
       <div class="price-name">Экосистема</div>
       <div class="price-val">Индив.</div>
-      <div class="price-sub">полный цикл · по запросу</div>
+      <div class="price-sub">для крупных задач · по запросу</div>
       <ul class="price-list"><li>Все направления</li><li>Кастомная аналитика</li><li>Ежедневные отчёты</li><li>ИИ под ваши процессы</li><li>Выделенная команда</li><li>SLA и гарантии</li></ul>
       <a href="#contact" class="btn-outline" style="display:block;text-align:center;text-decoration:none;padding:13px;border-radius:100px;font-size:13px;">Обсудить</a>
     </div>
@@ -879,16 +890,19 @@ async function sendChat() {
   showTyping();
   try {
     var messages = [{ role: 'system', content: SYS }].concat(chatHistory.slice(-8));
-    var res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    // Use CORS proxy when running from file://, direct when hosted
+    var isLocal = window.location.protocol === 'file:';
+    var endpoint = 'https://openrouter.ai/api/v1/chat/completions';
+    var res = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + apiKey,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://luna-agency.ru',
+        'HTTP-Referer': window.location.href,
         'X-Title': 'luna AI'
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.1-8b-instruct:free',
+        model: 'meta-llama/llama-3.1-8b-instruct',
         messages: messages,
         max_tokens: 350,
         temperature: 0.7
@@ -906,7 +920,12 @@ async function sendChat() {
   } catch (e) {
     removeTyping();
     console.error(e);
-    addMsg('Ошибка: ' + e.message + '. Напишите нам: @luna_agency', 'ai');
+    var isLocal = window.location.protocol === 'file:';
+    if(isLocal) {
+      addMsg('⚠️ ИИ не работает при открытии файла напрямую. Запустите через локальный сервер:\n\n1. Откройте Терминал в папке с файлом\n2. Введите: python3 -m http.server 8080\n3. Откройте: http://localhost:8080/luna_FINAL.html', 'ai');
+    } else {
+      addMsg('Ошибка соединения. Проверьте ключ или напишите: @luna_agency', 'ai');
+    }
   }
 }
 
@@ -923,107 +942,6 @@ function closeOrModal() { document.getElementById('or-modal').style.display = 'n
 
 chatInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') sendChat(); });
 
-// Draw logo on canvas
-(function(){
-  var c = document.getElementById('logo-canvas');
-  if(!c) return;
-  var ctx = c.getContext('2d');
-  var s = 0.21; // scale factor: 229*0.21≈48, 290*0.21≈61
-
-  // L - pink #E42B95
-  ctx.fillStyle = '#E42B95';
-  ctx.beginPath();
-  // M33.45 81.8 L33.45 171.95 H109.65 L109.65 192.8 H8.1 L8.1 81.8 Z
-  ctx.moveTo(33.45*s, 81.8*s);
-  ctx.lineTo(33.45*s, 171.95*s);
-  ctx.lineTo(109.65*s, 171.95*s);
-  ctx.lineTo(109.65*s, 192.8*s);
-  ctx.lineTo(8.1*s, 192.8*s);
-  ctx.lineTo(8.1*s, 81.8*s);
-  ctx.closePath();
-  ctx.fill();
-
-  // A - cyan #14C1CA (triangle shape)
-  ctx.fillStyle = '#14C1CA';
-  ctx.beginPath();
-  ctx.moveTo(157.4*s, 64.2*s);
-  ctx.lineTo(179.84*s, 64.2*s);
-  ctx.lineTo(227.96*s, 153*s);
-  ctx.lineTo(206.84*s, 153*s);
-  ctx.lineTo(196.64*s, 134.16*s);
-  ctx.lineTo(140.6*s, 134.16*s);
-  ctx.lineTo(130.4*s, 153*s);
-  ctx.lineTo(109.28*s, 153*s);
-  ctx.closePath();
-  ctx.fill();
-  // inner cutout white
-  ctx.fillStyle = '#18181E';
-  ctx.beginPath();
-  ctx.moveTo(168.68*s, 82.44*s);
-  ctx.lineTo(187.76*s, 117.72*s);
-  ctx.lineTo(149.48*s, 117.72*s);
-  ctx.closePath();
-  ctx.fill();
-
-  // U - yellow #FFD101
-  ctx.fillStyle = '#FFD101';
-  ctx.beginPath();
-  ctx.moveTo(116.3*s, 63.25*s);
-  ctx.lineTo(140.3*s, 63.25*s);
-  ctx.lineTo(140.3*s, 145*s);
-  ctx.lineTo(116.3*s, 145*s);
-  ctx.lineTo(116.3*s, 134.2*s);
-  // curve approximation
-  ctx.lineTo(91.55*s, 130.6*s);
-  ctx.lineTo(75.95*s, 125.65*s);
-  ctx.lineTo(67.85*s, 96.55*s);
-  ctx.lineTo(67.85*s, 63.25*s);
-  ctx.lineTo(43.85*s, 63.25*s);
-  ctx.lineTo(43.85*s, 97*s);
-  ctx.lineTo(53.45*s, 136.15*s);
-  ctx.lineTo(80.15*s, 147.7*s);
-  ctx.lineTo(116.3*s, 134.2*s);
-  ctx.closePath();
-  ctx.fill();
-
-  // N - purple #7421E1
-  ctx.fillStyle = '#7421E1';
-  ctx.beginPath();
-  ctx.moveTo(116.302*s, 145*s);
-  ctx.lineTo(140.302*s, 145*s);
-  ctx.lineTo(140.302*s, 155.8*s);
-  ctx.lineTo(165.052*s, 159.4*s);
-  ctx.lineTo(180.652*s, 164.35*s);
-  ctx.lineTo(187.252*s, 176.65*s);
-  ctx.lineTo(188.752*s, 193.45*s);
-  ctx.lineTo(188.752*s, 226.75*s);
-  ctx.lineTo(212.752*s, 226.75*s);
-  ctx.lineTo(212.752*s, 193*s);
-  ctx.lineTo(203.152*s, 153.85*s);
-  ctx.lineTo(176.452*s, 142.3*s);
-  ctx.lineTo(140.302*s, 145*s);
-  ctx.closePath();
-  ctx.fill();
-  ctx.beginPath();
-  ctx.moveTo(116.302*s, 226.75*s);
-  ctx.lineTo(116.302*s, 145*s);
-  ctx.lineTo(140.302*s, 145*s);
-  ctx.lineTo(140.302*s, 194.2*s);
-  ctx.lineTo(145.252*s, 169.15*s);
-  ctx.lineTo(116.302*s, 226.75*s);
-  ctx.closePath();
-  // Just draw a simple rect for N left bar
-  ctx.fillStyle = '#7421E1';
-  ctx.fillRect(116.302*s, 145*s, 24*s, 81.75*s);
-  ctx.fillRect(188.752*s, 145*s, 24*s, 81.75*s);
-
-  // bottom bar blue
-  ctx.fillStyle = '#3258E7';
-  ctx.fillRect(8*s, 206*s, 102*s, 21*s);
-  // left bar pink
-  ctx.fillStyle = '#E42B95';
-  ctx.fillRect(8*s, 193*s-129.7*s, 26*s, 129.7*s);
-})();
 
 // ── SCROLL REVEAL (subtle opacity only, no movement) ──
 const observer = new IntersectionObserver(entries=>{
