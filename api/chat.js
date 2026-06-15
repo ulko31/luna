@@ -5,71 +5,91 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({error: 'Method not allowed'});
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) {
-    console.error('OPENROUTER_API_KEY not set');
-    return res.status(500).json({error: 'API key not configured', choices: [{message:{content:'ИИ не настроен. Напишите нам: @ulko_31'}}]});
+  const hfToken = process.env.HF_TOKEN;
+  if (!hfToken) {
+    console.error('HF_TOKEN not set');
+    return res.status(200).json({choices:[{message:{content:null}}]});
   }
 
-  try {
-    const { messages } = req.body;
+  const { messages } = req.body;
 
-    // Try multiple free models in order
-    const models = [
-      'mistralai/mistral-7b-instruct:free',
-      'meta-llama/llama-3.2-3b-instruct:free',
-      'google/gemma-2-9b-it:free',
-      'qwen/qwen-2.5-7b-instruct:free',
-    ];
+  // Build prompt from messages
+  const systemMsg = messages.find(m => m.role === 'system');
+  const userMessages = messages.filter(m => m.role !== 'system');
+  
+  let prompt = systemMsg ? systemMsg.content + '\n\n' : '';
+  userMessages.forEach(m => {
+    if (m.role === 'user') prompt += 'Пользователь: ' + m.content + '\n';
+    if (m.role === 'assistant') prompt += 'Ассистент: ' + m.content + '\n';
+  });
+  prompt += 'Ассистент:';
 
-    let lastError = null;
-    for (const model of models) {
-      try {
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  // Try models in order
+  const models = [
+    'mistralai/Mistral-7B-Instruct-v0.3',
+    'HuggingFaceH4/zephyr-7b-beta',
+    'mistralai/Mixtral-8x7B-Instruct-v0.1',
+  ];
+
+  for (const model of models) {
+    try {
+      const r = await fetch(
+        `https://api-inference.huggingface.co/models/${model}`,
+        {
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': `Bearer ${hfToken}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://luna-agency.ru',
-            'X-Title': 'luna AI'
           },
           body: JSON.stringify({
-            model,
-            messages,
-            max_tokens: 350,
-            temperature: 0.7
+            inputs: prompt,
+            parameters: {
+              max_new_tokens: 300,
+              temperature: 0.7,
+              return_full_text: false,
+              stop: ['Пользователь:', '\nПользователь']
+            }
           })
-        });
-
-        const data = await response.json();
-
-        if (data.error) {
-          console.error(`Model ${model} error:`, data.error.message);
-          lastError = data.error.message;
-          continue; // try next model
         }
+      );
 
-        if (data.choices && data.choices[0]) {
-          console.log(`Success with model: ${model}`);
-          return res.status(200).json(data);
+      const data = await r.json();
+      console.log(`Model ${model} response:`, JSON.stringify(data).slice(0, 200));
+
+      if (data.error) {
+        if (data.error.includes('loading') || data.estimated_time) {
+          // Model is loading, try next
+          console.log(`${model} is loading, trying next...`);
+          continue;
         }
-      } catch(e) {
-        console.error(`Model ${model} fetch error:`, e.message);
-        lastError = e.message;
+        console.error(`${model} error:`, data.error);
         continue;
       }
+
+      let answer = '';
+      if (Array.isArray(data) && data[0]?.generated_text) {
+        answer = data[0].generated_text;
+      } else if (data.generated_text) {
+        answer = data.generated_text;
+      }
+
+      // Clean up the answer
+      answer = answer
+        .replace(/Пользователь:.*/gs, '')
+        .replace(/^Ассистент:\s*/i, '')
+        .trim();
+
+      if (answer) {
+        return res.status(200).json({
+          choices: [{ message: { content: answer } }]
+        });
+      }
+    } catch(e) {
+      console.error(`${model} fetch error:`, e.message);
+      continue;
     }
-
-    // All models failed
-    console.error('All models failed. Last error:', lastError);
-    return res.status(200).json({
-      choices: [{message:{content: 'Сервис временно недоступен. Напишите нам напрямую: @ulko_31 или uly.kozmenko@gmail.com'}}]
-    });
-
-  } catch(e) {
-    console.error('Handler error:', e.message);
-    return res.status(200).json({
-      choices: [{message:{content: 'Ошибка сервера. Напишите нам: @ulko_31'}}]
-    });
   }
+
+  // All failed — return null so frontend uses fallback
+  return res.status(200).json({choices:[{message:{content:null}}]});
 }
