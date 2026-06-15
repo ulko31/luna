@@ -43,8 +43,8 @@ body{background:var(--bg);color:var(--white);font-family:'Onest',sans-serif;font
 .hero-title .t-ghost{color:rgba(245,243,239,.12);}
 
 /* CENTER CARDS */
-.hero-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;gap:16px;z-index:2;pointer-events:none;}
-.hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:20px 24px;backdrop-filter:blur(12px);min-width:160px;text-align:center;}
+.hero-center{display:flex;gap:16px;margin-bottom:40px;flex-wrap:wrap;}
+.hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 24px;backdrop-filter:blur(12px);text-align:center;}
 .hero-card-num{font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;line-height:1;}
 .hero-card-label{font-size:12px;color:var(--muted);margin-top:4px;}
 
@@ -221,7 +221,6 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
   .nav-links,.nav-cta{display:none;}
   .nav-burger{display:flex;}
   .hero{padding:90px 20px 50px;}
-  .hero-center{display:none;}
   .hero-title{font-size:clamp(40px,12vw,72px);}
   .hero-bottom{flex-direction:column;align-items:flex-start;gap:24px;}
   .hero-ctas{flex-direction:column;width:100%;}
@@ -281,24 +280,13 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
 
-  <!-- CENTER STATS -->
-  <div class="hero-center">
-    <div class="hero-card">
-      <div class="hero-card-num" style="color:var(--pink);">3×</div>
-      <div class="hero-card-label">рост трафика</div>
-    </div>
-    <div class="hero-card">
-      <div class="hero-card-num" style="color:var(--cyan);">48ч</div>
-      <div class="hero-card-label">до первых заявок</div>
-    </div>
-    <div class="hero-card">
-      <div class="hero-card-num" style="color:var(--yellow);">24/7</div>
-      <div class="hero-card-label">ИИ на связи</div>
-    </div>
-  </div>
-
   <div>
     <div class="hero-badge"><span class="hero-badge-dot"></span>Digital агентство нового поколения</div>
+    <div class="hero-center">
+      <div class="hero-card"><div class="hero-card-num" style="color:var(--pink);">3×</div><div class="hero-card-label">рост трафика</div></div>
+      <div class="hero-card"><div class="hero-card-num" style="color:var(--cyan);">48ч</div><div class="hero-card-label">до первых заявок</div></div>
+      <div class="hero-card"><div class="hero-card-num" style="color:var(--yellow);">24/7</div><div class="hero-card-label">ИИ на связи</div></div>
+    </div>
     <h1 class="hero-title">
       Растём<br>
       <span class="t-pink">вместе</span><br>
@@ -331,10 +319,10 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
     <p style="margin-top:10px;">Встроенный ИИ-ассистент даёт клиентам прозрачность: вы всегда знаете что происходит с вашим проектом.</p>
   </div>
   <div class="about-stats">
-    <div class="astat"><div class="astat-num">3×</div><p>Рост трафика в среднем за квартал</p></div>
-    <div class="astat"><div class="astat-num">48ч</div><p>От брифа до первых результатов</p></div>
-    <div class="astat"><div class="astat-num">24/7</div><p>ИИ-ассистент всегда онлайн</p></div>
-    <div class="astat"><div class="astat-num">100%</div><p>Прозрачная отчётность</p></div>
+    <div class="astat"><div class="astat-num">🎯</div><p>Работаем только с теми, кому реально можем помочь</p></div>
+    <div class="astat"><div class="astat-num">🔍</div><p>Не скрываем цифры — отчёт в реальном времени</p></div>
+    <div class="astat"><div class="astat-num">🤝</div><p>Один менеджер на весь проект, не меняется</p></div>
+    <div class="astat"><div class="astat-num">⚡</div><p>Первые результаты видны уже в первый месяц</p></div>
   </div>
 </div>
 
