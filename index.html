@@ -28,30 +28,34 @@ body{background:var(--bg);color:var(--white);font-family:'Onest',sans-serif;font
 .nav-mobile a{color:var(--white);text-decoration:none;font-family:'Unbounded',sans-serif;font-size:22px;font-weight:700;}
 
 /* HERO */
-.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:100px 48px 60px;position:relative;overflow:hidden;}
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:100px 64px 80px;position:relative;overflow:hidden;gap:60px;}
 .hero-bg{position:absolute;inset:0;pointer-events:none;}
 .hero-bg::before{content:'';position:absolute;width:700px;height:700px;background:radial-gradient(circle,rgba(240,40,122,.22) 0%,transparent 65%);top:-200px;right:-100px;}
 .hero-bg::after{content:'';position:absolute;width:500px;height:500px;background:radial-gradient(circle,rgba(43,92,230,.18) 0%,transparent 65%);bottom:-100px;left:-50px;}
 .hero-grid{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.06) 1px,transparent 1px);background-size:38px 38px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);pointer-events:none;}
 
+.hero-left{position:relative;z-index:1;display:flex;flex-direction:column;justify-content:center;}
+.hero-right{position:relative;z-index:1;display:flex;flex-direction:column;gap:20px;align-items:flex-end;}
+
 .hero-badge{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);background:rgba(255,255,255,.04);border-radius:100px;padding:6px 16px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:28px;width:fit-content;}
 .hero-badge-dot{width:6px;height:6px;background:var(--cyan);border-radius:50%;animation:blink 2s infinite;}
 @keyframes blink{0%,100%{opacity:1;}50%{opacity:.3;}}
 
-.hero-title{font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(48px,8vw,110px);line-height:.9;letter-spacing:-.05em;position:relative;z-index:1;margin-bottom:40px;}
+.hero-title{font-family:'Unbounded',sans-serif;font-weight:900;font-size:clamp(48px,5.5vw,96px);line-height:.9;letter-spacing:-.05em;margin-bottom:32px;}
 .hero-title .t-pink{color:var(--pink);}
 .hero-title .t-ghost{color:rgba(245,243,239,.12);}
-
-/* CENTER CARDS */
-.hero-center{display:flex;gap:16px;margin-bottom:40px;flex-wrap:wrap;}
-.hero-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:16px;padding:16px 24px;backdrop-filter:blur(12px);text-align:center;}
-.hero-card-num{font-family:'Unbounded',sans-serif;font-size:32px;font-weight:900;line-height:1;}
-.hero-card-label{font-size:12px;color:var(--muted);margin-top:4px;}
-
-.hero-bottom{display:flex;align-items:flex-end;justify-content:space-between;position:relative;z-index:1;gap:40px;}
-.hero-desc{max-width:420px;font-size:16px;line-height:1.7;color:var(--muted);}
+.hero-desc{font-size:16px;line-height:1.7;color:var(--muted);margin-bottom:32px;max-width:480px;}
 .hero-desc strong{color:var(--white);font-weight:500;}
-.hero-ctas{display:flex;gap:12px;flex-shrink:0;}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+
+/* RIGHT SIDE CARDS */
+.hero-cards{display:flex;flex-direction:column;gap:16px;width:100%;}
+.hero-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:24px 28px;backdrop-filter:blur(12px);display:flex;align-items:center;gap:20px;transition:background .3s;}
+.hero-card:hover{background:rgba(255,255,255,.08);}
+.hero-card-num{font-family:'Unbounded',sans-serif;font-size:40px;font-weight:900;line-height:1;flex-shrink:0;width:100px;}
+.hero-card-info{}
+.hero-card-label{font-size:14px;font-weight:500;color:var(--white);}
+.hero-card-sub{font-size:12px;color:var(--muted);margin-top:3px;}
 .btn-pink{display:inline-flex;align-items:center;gap:8px;background:var(--pink);color:#fff;text-decoration:none;padding:15px 30px;border-radius:100px;font-size:14px;font-weight:500;border:none;cursor:pointer;transition:transform .2s,box-shadow .2s;box-shadow:0 8px 28px rgba(240,40,122,.3);}
 .btn-pink:hover{transform:scale(1.03);box-shadow:0 12px 36px rgba(240,40,122,.5);}
 .btn-ghost{display:inline-flex;align-items:center;gap:8px;background:transparent;color:var(--white);text-decoration:none;padding:15px 30px;border-radius:100px;font-size:14px;border:1px solid rgba(255,255,255,.18);cursor:pointer;transition:border-color .2s;}
@@ -220,7 +224,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
 @media(max-width:768px){
   .nav-links,.nav-cta{display:none;}
   .nav-burger{display:flex;}
-  .hero{padding:90px 20px 50px;}
+  .hero{grid-template-columns:1fr;padding:90px 20px 50px;gap:40px;}
   .hero-title{font-size:clamp(40px,12vw,72px);}
   .hero-bottom{flex-direction:column;align-items:flex-start;gap:24px;}
   .hero-ctas{flex-direction:column;width:100%;}
@@ -235,6 +239,10 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
   .footer-right{align-items:flex-start;}
   .footer-contacts{text-align:left;}
   .hero-grid{display:none;}
+  .hero-right{align-items:flex-start;}
+  .hero-cards{gap:10px;}
+  .hero-card{padding:16px 20px;}
+  .hero-card-num{font-size:28px;width:70px;}
 }
 </style>
 </head>
@@ -280,24 +288,40 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
 
-  <div>
+  <!-- LEFT: текст -->
+  <div class="hero-left">
     <div class="hero-badge"><span class="hero-badge-dot"></span>Digital агентство нового поколения</div>
-    <div class="hero-center">
-      <div class="hero-card"><div class="hero-card-num" style="color:var(--pink);">3×</div><div class="hero-card-label">рост трафика</div></div>
-      <div class="hero-card"><div class="hero-card-num" style="color:var(--cyan);">48ч</div><div class="hero-card-label">до первых заявок</div></div>
-      <div class="hero-card"><div class="hero-card-num" style="color:var(--yellow);">24/7</div><div class="hero-card-label">ИИ на связи</div></div>
-    </div>
     <h1 class="hero-title">
       Растём<br>
       <span class="t-pink">вместе</span><br>
       <span class="t-ghost">с вами</span>
     </h1>
-  </div>
-  <div class="hero-bottom">
     <p class="hero-desc">Берём на себя весь digital: <strong>стратегия, дизайн, реклама, SMM, SEO</strong>. Вы занимаетесь бизнесом — мы делаем так, чтобы вас находили.</p>
     <div class="hero-ctas">
       <a href="#contact" class="btn-pink">Начать проект →</a>
       <a href="#portfolio" class="btn-ghost">Наши работы</a>
+    </div>
+  </div>
+
+  <!-- RIGHT: статы -->
+  <div class="hero-right">
+    <div class="hero-cards">
+      <div class="hero-card">
+        <div class="hero-card-num" style="color:var(--pink);">3×</div>
+        <div class="hero-card-info"><div class="hero-card-label">Рост трафика</div><div class="hero-card-sub">в среднем за первый квартал</div></div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-num" style="color:var(--cyan);">48ч</div>
+        <div class="hero-card-info"><div class="hero-card-label">До первых заявок</div><div class="hero-card-sub">от брифа до запуска рекламы</div></div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-num" style="color:var(--yellow);">24/7</div>
+        <div class="hero-card-info"><div class="hero-card-label">ИИ на связи</div><div class="hero-card-sub">ответы и аналитика в реальном времени</div></div>
+      </div>
+      <div class="hero-card">
+        <div class="hero-card-num" style="color:var(--purple);">100%</div>
+        <div class="hero-card-info"><div class="hero-card-label">Прозрачность</div><div class="hero-card-sub">отчёты без скрытых цифр</div></div>
+      </div>
     </div>
   </div>
 </section>
