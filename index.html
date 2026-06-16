@@ -50,9 +50,9 @@ body{background:var(--bg);color:var(--white);font-family:'Onest',sans-serif;font
 
 /* RIGHT SIDE CARDS */
 .hero-cards{display:flex;flex-direction:column;gap:16px;width:100%;}
-.hero-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:24px 28px;backdrop-filter:blur(12px);display:flex;align-items:center;gap:20px;transition:background .3s;}
+.hero-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:20px 24px;backdrop-filter:blur(12px);display:grid;grid-template-columns:110px 1fr;align-items:center;gap:16px;transition:background .3s;}
 .hero-card:hover{background:rgba(255,255,255,.08);}
-.hero-card-num{font-family:'Unbounded',sans-serif;font-size:40px;font-weight:900;line-height:1;flex-shrink:0;width:100px;}
+.hero-card-num{font-family:'Unbounded',sans-serif;font-size:38px;font-weight:900;line-height:1;white-space:nowrap;}
 .hero-card-info{}
 .hero-card-label{font-size:14px;font-weight:500;color:var(--white);}
 .hero-card-sub{font-size:12px;color:var(--muted);margin-top:3px;}
@@ -259,8 +259,8 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
       <path d="M116.3 63.25H140.3V145H116.3V134.2C108.4 143.2 96.35 147.7 80.15 147.7C68.75 147.7 59.85 143.85 53.45 136.15C47.05 128.35 43.85 115.3 43.85 97V63.25H67.85V96.55C67.85 102.95 68.35 108.55 69.35 113.35C70.35 118.15 72.55 122.25 75.95 125.65C79.45 128.95 84.65 130.6 91.55 130.6C101.55 130.6 108.15 127.35 111.35 120.85C114.65 114.25 116.3 105.9 116.3 95.8V63.25Z" fill="#FFD101"/>
       <rect x="8" y="206" width="102" height="21" fill="#3258E7"/>
       <rect x="8" y="193" width="129.7" height="26" transform="rotate(-90 8 193)" fill="#E42B95"/>
-      <path d="M109.5 153L110.3 140.9L116.3 139.9V153.9L109.5 153Z" fill="#F8F6F6"/>
-      <path d="M195 134H229V153H206.5L195 134Z" fill="#F8F6F6"/>
+
+
       <path d="M140.302 226.75H116.302V145H140.302V155.8C148.202 146.8 160.252 142.3 176.452 142.3C187.852 142.3 196.752 146.15 203.152 153.85C209.552 161.65 212.752 174.7 212.752 193V226.75H188.752V193.45C188.752 187.05 188.252 181.45 187.252 176.65C186.252 171.85 184.052 167.75 180.652 164.35C177.152 161.05 171.952 159.4 165.052 159.4C155.052 159.4 148.452 162.65 145.252 169.15C141.952 175.75 140.302 184.1 140.302 194.2V226.75Z" fill="#7421E1"/>
     </svg>
   </a>
@@ -603,6 +603,27 @@ async function submitForm() {
 }
 
 // ── AI CHAT ──
+
+var FALLBACK = [
+  {k:['цена','стоит','тариф','сколько','бюджет'],a:'Наши тарифы:\n• Старт — от 50 000 ₽/мес (одно направление)\n• Бизнес — от 120 000 ₽/мес (до 3 услуг)\n• Полный цикл — индивидуально\n\nОставьте заявку — подберём оптимальный вариант 👇'},
+  {k:['сайт','лендинг','разработ','веб'],a:'Делаем сайты и лендинги которые конвертируют. Срок — от 1 недели, передаём исходники. Оставьте заявку для расчёта стоимости 🚀'},
+  {k:['реклам','директ','google','яндекс','таргет'],a:'Настраиваем Яндекс.Директ и Google Ads. Средний CTR 3–5%, ROI клиентов ×3 за квартал. Напишите нам: @ulko_31'},
+  {k:['smm','соцсет','контент','instagram','вконтакте','telegram'],a:'Ведём соцсети системно: контент-план, посты, сторис, аналитика. ВКонтакте, Telegram, Instagram. Рост аудитории ×2 за 3 месяца.'},
+  {k:['seo','поиск','органик','продвижен'],a:'SEO даёт трафик без зависимости от рекламы. Первые результаты через 2–3 месяца. Пишите: @ulko_31'},
+  {k:['бренд','логотип','дизайн','фирм'],a:'Создаём логотип, брендбук, фирменный стиль. Срок от 1 недели, работаем в Figma. Напишите: @ulko_31'},
+  {k:['кейс','портфолио','пример','работ'],a:'Наши кейсы: ребрендинг VELVET, IT-стартап +340% лидов, ресторанная сеть FEAST ×2 подписчики, чат-бот для медклиники. Смотрите раздел Портфолио выше!'},
+  {k:['контакт','связ','написать','менеджер','позвон'],a:'Свяжитесь с нами:\n📧 uly.kozmenko@gmail.com\n💬 Telegram: @ulko_31\n📱 +7 (981) 128-82-90\n\nОтветим в течение 2 часов!'},
+  {k:['привет','добрый','здравств','хай'],a:'Привет! Я ИИ-ассистент luna 👋 Спросите о наших услугах, ценах или стратегии продвижения — помогу разобраться.'},
+];
+
+function getFallback(text) {
+  var t = (text||'').toLowerCase();
+  for (var i=0; i<FALLBACK.length; i++) {
+    if (FALLBACK[i].k.some(function(k){return t.indexOf(k)!==-1;})) return FALLBACK[i].a;
+  }
+  return 'Хороший вопрос! Для точного ответа напишите нам напрямую:\n\n💬 @ulko_31\n📧 uly.kozmenko@gmail.com\n\nОтветим в течение 2 часов!';
+}
+
 var chatHistory = [];
 var SYS = 'Ты — ИИ-ассистент digital-агентства luna. Отвечай ТОЛЬКО на русском. Агентство: брендинг, веб, реклама, SMM, SEO, ИИ-автоматизация. Тарифы от 50 000 руб/мес. Контакт: @ulko_31. Отвечай кратко и по делу, до 120 слов.';
 
@@ -642,12 +663,15 @@ async function sendChat() {
     });
     var data = await res.json();
     removeTyping();
-    var answer = (data.choices && data.choices[0]) ? data.choices[0].message.content.trim() : 'Попробуйте ещё раз';
+    var answer = (data.choices && data.choices[0]) ? data.choices[0].message.content.trim() : null;
+    if (!answer || answer.includes('временно недоступен') || answer.includes('Напишите нам')) {
+      answer = getFallback(text);
+    }
     chatHistory.push({role:'assistant', content:answer});
     addMsg(answer, 'ai');
   } catch(e) {
     removeTyping();
-    addMsg('Не могу подключиться. Напишите нам: @ulko_31 💬', 'ai');
+    addMsg(getFallback(text), 'ai');
   }
 }
 
