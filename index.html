@@ -154,18 +154,28 @@ h2.heading{font-family:'Unbounded',sans-serif;font-weight:700;font-size:clamp(28
 .step-card h3{font-family:'Unbounded',sans-serif;font-size:13px;font-weight:700;margin-bottom:10px;}
 .step-card p{font-size:13px;line-height:1.65;color:var(--muted);}
 
-/* PORTFOLIO */
-.port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:56px;}
-.port-card{border-radius:20px;overflow:hidden;position:relative;aspect-ratio:3/4;cursor:pointer;transition:transform .4s;}
+/* PORTFOLIO CAROUSEL */
+.portfolio-wrap{position:relative;margin-top:56px;}
+.carousel{display:flex;gap:16px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;padding-bottom:4px;cursor:grab;}
+.carousel::-webkit-scrollbar{display:none;}
+.carousel.dragging{cursor:grabbing;user-select:none;}
+.port-card{flex:0 0 420px;height:280px;border-radius:20px;overflow:hidden;position:relative;scroll-snap-align:start;transition:transform .3s;}
 .port-card:hover{transform:scale(1.02);}
-.port-card:first-child{grid-column:span 2;aspect-ratio:16/9;}
-.port-bg{position:absolute;inset:0;transition:transform .5s;}
+.port-card:first-child{flex:0 0 640px;}
+.port-bg{position:absolute;inset:0;background-size:cover;background-position:center;transition:transform .5s;}
 .port-card:hover .port-bg{transform:scale(1.05);}
-.port-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,transparent 55%);}
-.port-info{position:absolute;bottom:0;left:0;right:0;padding:24px;}
+.port-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.1) 50%,transparent 100%);}
+.port-info{position:absolute;bottom:0;left:0;right:0;padding:22px;}
 .port-cat{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:6px;}
 .port-info h3{font-family:'Unbounded',sans-serif;font-size:15px;font-weight:700;line-height:1.25;}
-.port-tag{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:100px;font-size:11px;background:rgba(255,255,255,.12);}
+.port-tag{display:inline-block;margin-top:8px;padding:3px 12px;border-radius:100px;font-size:11px;background:rgba(255,255,255,.15);backdrop-filter:blur(4px);}
+/* carousel controls */
+.carousel-nav{display:flex;gap:10px;margin-top:16px;align-items:center;}
+.carousel-btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--border);background:var(--bg2);color:var(--white);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;flex-shrink:0;}
+.carousel-btn:hover{border-color:var(--pink);color:var(--pink);}
+.carousel-dots{display:flex;gap:6px;align-items:center;}
+.carousel-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.2);transition:all .3s;cursor:pointer;}
+.carousel-dot.active{background:var(--pink);width:20px;border-radius:3px;}
 
 /* PRICING */
 .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:56px;}
@@ -400,7 +410,14 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 48p
 <section class="sec" id="portfolio">
   <div class="sec-label">Портфолио</div>
   <h2 class="heading">Проекты</h2>
-  <div class="port-grid" id="portfolio-container"></div>
+  <div class="portfolio-wrap">
+    <div class="carousel" id="portfolio-container"></div>
+    <div class="carousel-nav">
+      <button class="carousel-btn" onclick="carouselPrev()">←</button>
+      <button class="carousel-btn" onclick="carouselNext()">→</button>
+      <div class="carousel-dots" id="carousel-dots"></div>
+    </div>
+  </div>
 </section>
 
 <!-- PROCESS -->
@@ -537,25 +554,97 @@ window.addEventListener('scroll', function() {
   nav.style.background = window.scrollY > 40 ? 'rgba(24,24,30,0.99)' : 'rgba(24,24,30,0.96)';
 });
 
-// ── PORTFOLIO ──
+// ── PORTFOLIO CAROUSEL ──
+var carouselIndex = 0;
+
 function renderPortfolio() {
   var container = document.getElementById('portfolio-container');
   var saved = JSON.parse(localStorage.getItem('luna_cases') || '[]');
   var defaults = [
-    {title:'Косметический бренд VELVET',cat:'Брендинг + Веб',tag:'Ребрендинг',bg:'linear-gradient(135deg,#E8328A,#6B2FD9)'},
-    {title:'IT-стартап: +340% лидов',cat:'Контекстная реклама',tag:'+340% лидов',bg:'linear-gradient(135deg,#2B5CE6,#00C9B1)'},
-    {title:'Ресторанная сеть FEAST',cat:'SMM + SEO',tag:'×2 подписчики',bg:'linear-gradient(135deg,#F5D800,#E8328A)'},
-    {title:'Чат-бот для медклиники',cat:'ИИ-автоматизация',tag:'−70% обращений',bg:'linear-gradient(135deg,#7B35F0,#2B5CE6)'},
+    {title:'Косметический бренд VELVET',cat:'Брендинг + Веб',tag:'Ребрендинг',bg:'linear-gradient(135deg,#E8328A,#6B2FD9)',photo:null},
+    {title:'IT-стартап: +340% лидов',cat:'Контекстная реклама',tag:'+340% лидов',bg:'linear-gradient(135deg,#2B5CE6,#00C9B1)',photo:null},
+    {title:'Ресторанная сеть FEAST',cat:'SMM + SEO',tag:'×2 подписчики',bg:'linear-gradient(135deg,#F5D800,#E8328A)',photo:null},
+    {title:'Чат-бот для медклиники',cat:'ИИ-автоматизация',tag:'−70% обращений',bg:'linear-gradient(135deg,#7B35F0,#2B5CE6)',photo:null},
   ];
   var all = defaults.concat(saved);
+
   container.innerHTML = all.map(function(c, i) {
-    return '<div class="port-card"' + (i===0?' style="grid-column:span 2;aspect-ratio:16/9"':'') + '>' +
-      '<div class="port-bg" style="background:' + c.bg + ';position:absolute;inset:0;"></div>' +
+    var bgStyle = c.photo
+      ? 'background-image:url(' + c.photo + ');background-size:cover;background-position:center;'
+      : 'background:' + c.bg + ';';
+    return '<div class="port-card">' +
+      '<div class="port-bg" style="position:absolute;inset:0;' + bgStyle + '"></div>' +
       '<div class="port-overlay"></div>' +
-      '<div class="port-info"><div class="port-cat">' + (c.cat||'') + '</div><h3>' + c.title + '</h3>' +
-      (c.tag ? '<div class="port-tag">' + c.tag + '</div>' : '') + '</div></div>';
+      '<div class="port-info">' +
+      '<div class="port-cat">' + (c.cat||'') + '</div>' +
+      '<h3>' + c.title + '</h3>' +
+      (c.tag ? '<div class="port-tag">' + c.tag + '</div>' : '') +
+      '</div></div>';
   }).join('');
+
+  // Dots
+  var dots = document.getElementById('carousel-dots');
+  dots.innerHTML = all.map(function(_,i){
+    return '<div class="carousel-dot' + (i===0?' active':'') + '" onclick="carouselGoTo('+i+')"></div>';
+  }).join('');
+
+  // Drag scroll
+  initCarouselDrag();
 }
+
+function carouselGoTo(idx) {
+  var container = document.getElementById('portfolio-container');
+  var cards = container.querySelectorAll('.port-card');
+  if(!cards[idx]) return;
+  carouselIndex = idx;
+  container.scrollTo({left: cards[idx].offsetLeft - 16, behavior:'smooth'});
+  document.querySelectorAll('.carousel-dot').forEach(function(d,i){
+    d.classList.toggle('active', i===idx);
+  });
+}
+
+function carouselNext() {
+  var container = document.getElementById('portfolio-container');
+  var total = container.querySelectorAll('.port-card').length;
+  carouselGoTo((carouselIndex + 1) % total);
+}
+
+function carouselPrev() {
+  var container = document.getElementById('portfolio-container');
+  var total = container.querySelectorAll('.port-card').length;
+  carouselGoTo((carouselIndex - 1 + total) % total);
+}
+
+function initCarouselDrag() {
+  var el = document.getElementById('portfolio-container');
+  var startX, scrollLeft, down = false;
+  el.addEventListener('mousedown', function(e){
+    down=true; startX=e.pageX-el.offsetLeft; scrollLeft=el.scrollLeft;
+    el.classList.add('dragging');
+  });
+  el.addEventListener('mouseleave', function(){down=false;el.classList.remove('dragging');});
+  el.addEventListener('mouseup', function(){down=false;el.classList.remove('dragging');});
+  el.addEventListener('mousemove', function(e){
+    if(!down) return; e.preventDefault();
+    el.scrollLeft = scrollLeft-(e.pageX-el.offsetLeft-startX);
+  });
+  // Update dots on scroll
+  el.addEventListener('scroll', function(){
+    var cards = el.querySelectorAll('.port-card');
+    var closest = 0, minDist = Infinity;
+    cards.forEach(function(c,i){
+      var dist = Math.abs(c.offsetLeft - el.scrollLeft);
+      if(dist < minDist){ minDist=dist; closest=i; }
+    });
+    if(closest !== carouselIndex){
+      carouselIndex = closest;
+      document.querySelectorAll('.carousel-dot').forEach(function(d,i){
+        d.classList.toggle('active', i===closest);
+      });
+    }
+  });
+}
+
 renderPortfolio();
 window.addEventListener('storage', renderPortfolio);
 
