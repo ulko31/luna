@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   const TG_CHAT  = process.env.TELEGRAM_CHAT_ID;
 
   const text = [
-    '🔔 *Новая заявка — luna*',
+    '🔔 *Новая заявка — OOOPS*',
     '',
     `👤 *Имя:* ${name}`,
     `📱 *Контакт:* ${phone}`,
@@ -43,11 +43,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // Fallback — log to Vercel console at minimum
-  console.log('=== NEW LEAD (no TG configured) ===');
-  console.log(text);
-  console.log('===================================');
-
-  // Return ok so user sees success — check Vercel logs for leads
-  return res.status(200).json({ok: true, via: 'log'});
+  // Never report successful delivery when no notification was sent
+  console.error('OOOPS contact delivery failed or Telegram is not configured');
+  return res.status(503).json({ok:false,error:'Contact delivery unavailable'});
 }
