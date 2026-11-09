@@ -100,6 +100,18 @@ nav{left:12px;right:12px;padding:12px 15px}.menu-toggle{font-size:25px;color:var
 footer{max-width:1480px;margin:auto}
 @media(max-width:850px){.contact-grid{grid-template-columns:1fr;gap:32px}.contact h2{font-size:clamp(42px,9vw,70px)}}
 @media(max-width:600px){.contact{padding-top:75px;padding-bottom:88px}.contact-grid{grid-template-columns:minmax(0,1fr);gap:25px}.contact h2{font-size:clamp(42px,11vw,58px)}.contact form{padding:18px}}
+
+.ai-launch{position:fixed;right:18px;bottom:18px;z-index:1200;display:flex;align-items:center;gap:10px;border:1px solid #222;border-radius:50px;background:#faf7f3;color:#1d1d1d;padding:7px 18px 7px 7px;box-shadow:0 10px 30px #0002;font:700 13px DM Sans;cursor:pointer}
+.ai-launch b{display:grid;place-items:center;width:36px;height:36px;background:var(--violet);color:white;border-radius:50%;font-size:20px}
+.ai-panel{position:fixed;right:18px;bottom:80px;z-index:1201;width:min(380px,calc(100vw - 28px));height:min(530px,calc(100dvh - 110px));background:white;border:1px solid #cac5bd;box-shadow:0 20px 70px #0003;border-radius:13px;overflow:hidden;display:flex;flex-direction:column}
+.ai-panel[hidden]{display:none}.ai-head{background:var(--violet);color:white;padding:16px;display:flex;justify-content:space-between;align-items:center}.ai-head strong{display:block;font-size:16px}.ai-head small{display:block;font-size:11px;margin-top:4px}.ai-head button{border:0;background:none;color:white;font-size:28px;cursor:pointer}
+.ai-messages{min-height:0;flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#f8f7f4}
+.ai-message{margin:0;padding:10px 13px;max-width:92%;border-radius:9px;font-size:13px;line-height:1.55;white-space:pre-line;overflow-wrap:anywhere}
+.ai-message.bot{background:#e9dcf8;align-self:flex-start}.ai-message.user{background:#d9fb45;align-self:flex-end}
+.ai-quick{display:flex;gap:6px;padding:8px 12px;flex-wrap:wrap;background:#f8f7f4}.ai-quick button{font-size:11px;background:white;border:1px solid #c9c3bb;border-radius:5px;padding:7px;cursor:pointer}
+.ai-compose{display:flex;gap:6px;border-top:1px solid #ddd8cf;padding:10px}.ai-compose input{flex:1;min-width:0;border:1px solid #aaa;border-radius:5px;padding:11px;font-size:13px}.ai-compose button{border:0;background:#202020;color:white;border-radius:5px;padding:0 11px;font-size:12px;cursor:pointer}
+.ai-foot{font-size:10px;color:#777;padding:1px 12px 10px}
+@media(max-width:600px){.ai-launch{right:12px;bottom:12px}.ai-panel{right:12px;bottom:72px}}
 </style>
 </head>
 <body>
@@ -135,7 +147,7 @@ footer{max-width:1480px;margin:auto}
 <section class="contact wrap" id="contact"><div class="contact-grid"><div><span class="eyebrow">Контакты</span><h2 class="reveal">Обсудим<br><span style="color:var(--violet)">ваш проект</span></h2><p>Расскажите, что хотите запустить или изменить. Мы обсудим задачу, возможный формат и следующие шаги — без обязательств.</p><div class="contact-links"><a href="https://t.me/ulko_31" target="_blank" rel="noopener noreferrer">Telegram</a><a href="mailto:uly.kozmenko@gmail.com">Email</a></div></div>
 <form id="contact-form"><label class="field"><span>Как к вам обращаться *</span><input name="name" required maxlength="100" autocomplete="name" placeholder="Ваше имя"></label><label class="field"><span>Как связаться *</span><input name="phone" required maxlength="160" placeholder="Telegram или почта"></label><label class="field"><span>Компания / проект</span><input name="company" maxlength="150" placeholder="Необязательно"></label><label class="field"><span>Что нужно?</span><select name="service"><option value="">Пока выбираю</option><option>Приложение / MVP</option><option>Сайт / веб-разработка</option><option>Брендинг / дизайн</option><option>Контент / съёмка</option><option>Другое</option></select></label><label class="field"><span>Коротко о задаче</span><textarea name="msg" maxlength="3000" placeholder="Идея, сроки, примерный бюджет — если известны"></textarea></label><button type="submit" class="pill" id="submit-btn">Отправить заявку</button><p id="form-status" role="status" aria-live="polite" class="form-status"></p><small>Отправляя форму, вы соглашаетесь на обработку указанных контактных данных для ответа на запрос.</small></form>
 </div></section>
-</main>
+</main><aside class="ai-panel" id="ai-panel" aria-label="Консультант OOOPS" hidden><div class="ai-head"><div><strong>Спросить OOOPS</strong><small>Ассистент по услугам и проектам</small></div><button type="button" id="ai-close" aria-label="Закрыть">×</button></div><div id="ai-messages" class="ai-messages" role="log" aria-live="polite"><p class="ai-message bot">Привет! Помогу разобраться в услугах и проектах студии или подскажу, с чего начать сотрудничество</p></div><div class="ai-quick"><button type="button" data-question="Какие услуги вы предоставляете?">Услуги</button><button type="button" data-question="Какие проекты есть в портфолио?">Кейсы</button><button type="button" data-question="Как обсудить проект?">Сотрудничество</button></div><form id="ai-form" class="ai-compose"><input id="ai-input" maxlength="450" placeholder="Ваш вопрос" aria-label="Сообщение" required autocomplete="off"><button type="submit">Отправить</button></form><div class="ai-foot">ИИ может ошибаться, сроки и стоимость уточняйте у команды</div></aside><button id="ai-launch" class="ai-launch" type="button" aria-controls="ai-panel" aria-expanded="false"><b>?</b> Есть вопрос?</button>
 <footer class="wrap"><span>© 2026 OOOPS! · digital product & creative studio</span><span>Digital, design & content</span></footer>
 <script>
 const menuButton=document.getElementById('menu-toggle'),menu=document.getElementById('navitems');
@@ -146,5 +158,22 @@ if(!reduced && 'IntersectionObserver' in window){const observer=new Intersection
 if(!reduced){let tick=false;window.addEventListener('scroll',()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{const y=Math.min(window.scrollY,700);document.querySelectorAll('[data-parallax]').forEach(el=>{const offset=Number(el.dataset.parallax)*y;el.style.translate='0 '+offset+'px';});tick=false;});},{passive:true});}
 const form=document.getElementById('contact-form'),status=document.getElementById('form-status'),submit=document.getElementById('submit-btn');
 form.addEventListener('submit',async(e)=>{e.preventDefault();if(!form.reportValidity())return;submit.disabled=true;submit.textContent='Отправляем…';status.textContent='';const data=Object.fromEntries(new FormData(form).entries());try{const response=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let result={};try{result=await response.json()}catch{}if(!response.ok||!result.ok)throw new Error('Заявка не отправлена');form.reset();status.style.color='#267047';status.textContent='Готово! Заявка отправлена, свяжемся с вами по указанному контакту.';}catch(err){status.style.color='#a12e39';status.textContent='Не удалось отправить заявку. Напишите нам напрямую в Telegram или на почту — ссылки слева.';}finally{submit.disabled=false;submit.textContent='Отправить заявку';}});
+
+const aiPanel=document.getElementById('ai-panel'),aiLaunch=document.getElementById('ai-launch'),aiClose=document.getElementById('ai-close'),aiMessages=document.getElementById('ai-messages'),aiInput=document.getElementById('ai-input');
+const faq=[
+[/услуг|делаете|умеете|направлен/i,'Мы проектируем и разрабатываем цифровые продукты и MVP, создаём сайты и айдентику, снимаем и оформляем контент для брендов'],
+[/кейс|работ|проект|портфолио|пример/i,'В портфолио есть приложение SOFE, сайт кружка Станкевича, графический проект АртКорпус и другие работы. Исходные материалы доступны по ссылкам на карточках'],
+[/цен|стоим|бюджет|сколько|тариф/i,'Стоимость зависит от задачи и объёма работ. Напишите о своём проекте через форму или Telegram @ulko_31 — команда уточнит детали и подготовит оценку'],
+[/срок|недел|долго|месяц/i,'Сроки зависят от формата и сложности проекта. Сначала уточняем задачу, затем согласуем этапы и реалистичный график'],
+[/контакт|связ|сотруднич|заказ|нача|бриф/i,'Начать просто: расскажите о задаче в форме сайта или напишите в Telegram @ulko_31'],
+[/ии|искусственн|автоматизац|бот/i,'Можем обсудить AI-функции в цифровых продуктах. Технические решения подбираем под задачу, без обещаний до оценки']
+];
+const fallback=q=>faq.find(pair=>pair[0].test(q))?.[1]||'Могу помочь с услугами, кейсами и началом сотрудничества. Для индивидуальной оценки проекта напишите в Telegram @ulko_31';
+function aiMessage(kind,value){const node=document.createElement('p');node.className='ai-message '+kind;node.textContent=value;aiMessages.appendChild(node);aiMessages.scrollTop=aiMessages.scrollHeight;return node}
+function aiToggle(show){aiPanel.hidden=!show;aiLaunch.setAttribute('aria-expanded',String(show));if(show)aiInput.focus()}
+aiLaunch.addEventListener('click',()=>aiToggle(aiPanel.hidden));aiClose.addEventListener('click',()=>aiToggle(false));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!aiPanel.hidden)aiToggle(false)});
+let aiBusy=false;
+async function aiAsk(q){q=q.trim().slice(0,450);if(!q||aiBusy)return;aiBusy=true;aiMessage('user',q);aiInput.value='';const reply=aiMessage('bot','Уточняю ответ…');try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});const d=await r.json();if(!r.ok||typeof d.answer!=='string'||!d.answer.trim())throw Error('offline');reply.textContent=d.answer.trim().slice(0,2200)}catch{reply.textContent=fallback(q)+'\n\nСейчас отвечаю по справке студии: генеративный ИИ недоступен'}finally{aiBusy=false}}
+document.getElementById('ai-form').addEventListener('submit',e=>{e.preventDefault();aiAsk(aiInput.value)});document.querySelectorAll('.ai-quick button').forEach(b=>b.addEventListener('click',()=>aiAsk(b.dataset.question)));
 </script>
 </body></html>
