@@ -387,18 +387,30 @@ footer{max-width:1480px;margin:auto}
 .ai-foot{font:500 10px/1.5 'DM Sans',sans-serif!important;background:#fffdf9!important;padding:0 15px 12px!important;color:#777!important}
 @media(max-width:600px){.ai-panel{max-height:calc(100dvh - 100px)!important;bottom:78px!important;right:12px!important}.ai-launch{right:12px!important;bottom:12px!important}}
 @media(prefers-reduced-motion:reduce){.ai-launch,.ai-quick button{transition:none!important}}
-/* Match artwork's intrinsic ratio instead of drawing a tall empty photo mat. */
+/* One consistent full-area media viewport for ALL cases (including future CMS projects).
+   Contain never crops the image. The optional "framed" treatment is purely visual. */
+#work .project-art{padding:clamp(12px,2vw,26px)!important}
 #work .project-art .case-panel.case-panel-real{
-  height:auto!important;width:100%!important;min-height:0!important;
-  aspect-ratio:var(--art-ratio,1.5);max-height:510px!important;
-  padding:8px!important;display:grid!important;place-items:center!important;
-  border:1px solid #ffffff85!important;box-shadow:0 10px 23px #00000012!important;
-  background:#ffffff35!important
+  display:flex!important;align-items:center!important;justify-content:center!important;
+  height:100%!important;width:100%!important;min-width:0!important;min-height:0!important;
+  max-height:none!important;aspect-ratio:auto!important;overflow:hidden!important;
+  padding:0!important;border:0!important;border-radius:8px!important;
+  background:transparent!important;box-shadow:none!important
+}
+#work .project-art .case-panel.case-panel-real[data-presentation="framed"]{
+  padding:clamp(10px,1.6vw,20px)!important;background:#ffffff4b!important;
+  border:1px solid #ffffffa0!important;box-shadow:0 12px 26px #00000012!important
 }
 #work .project-art .case-panel.case-panel-real img{
-  width:100%!important;height:100%!important;min-height:0!important;
-  display:block!important;border-radius:6px!important
+  display:block!important;width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+  max-width:100%!important;max-height:100%!important;border-radius:5px!important;
+  object-fit:var(--fit,contain)!important;object-position:var(--x,50%) var(--y,50%)!important;
+  transform:scale(var(--zoom,1))!important;transform-origin:var(--x,50%) var(--y,50%)!important;
 }
+@media(min-width:951px){
+ #work .project{grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr)!important}
+}
+@media(max-width:600px){#work .project-art{padding:12px 17px 18px!important}}
 </style>
 </head>
 <body>
@@ -525,8 +537,8 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       article.style.setProperty('background-color',p.color,'important');
       if(p.color==='#272727')article.style.color='#fff';
       const route='/case.html?id='+encodeURIComponent(p.id);
-      article.innerHTML='<div class="project-copy"><span class="project-id">'+esc(p.category)+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(p.description)+'</p><a class="case-link" href="'+route+'">Открыть кейс</a></div><div class="project-art"><div class="case-panel case-panel-real">'+(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'')+'</div></div>';
-      const img=article.querySelector('img');if(img){const artwork=article.querySelector('.case-panel-real');const matchRatio=()=>{if(artwork&&p.coverFit!=='cover'&&img.naturalWidth&&img.naturalHeight){artwork.style.setProperty('--art-ratio',String(Math.max(.85,Math.min(2.1,img.naturalWidth/img.naturalHeight))))}};img.addEventListener('load',matchRatio);if(img.complete)matchRatio();img.style.setProperty('--x',(Number(p.posX)||50)+'%');img.style.setProperty('--y',(Number(p.posY)||50)+'%');img.style.setProperty('--zoom',String((Number(p.zoom)||100)/100));img.style.setProperty('--fit',p.coverFit==='cover'?'cover':'contain')}
+      article.innerHTML='<div class="project-copy"><span class="project-id">'+esc(p.category)+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(p.description)+'</p><a class="case-link" href="'+route+'">Открыть кейс</a></div><div class="project-art"><div class="case-panel case-panel-real" data-presentation="'+(p.coverPresentation==='framed'?'framed':'clean')+'">'+(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'')+'</div></div>';
+      const img=article.querySelector('img');if(img){img.style.setProperty('--x',(Number(p.posX)||50)+'%');img.style.setProperty('--y',(Number(p.posY)||50)+'%');img.style.setProperty('--zoom',String((Number(p.zoom)||100)/100));img.style.setProperty('--fit',p.coverFit==='cover'?'cover':'contain')}
       root.appendChild(article);
     });
   }catch(err){console.warn('Portfolio CMS unavailable: using existing cards')}
