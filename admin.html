@@ -73,5 +73,90 @@ $('settingsSave').onclick=async()=>{try{await api('settings','POST',{aiEnabled:$
 $('changePassword').onclick=async()=>{try{await api('password','POST',{password:$('newPassword').value});await logout()}catch(e){status(e.message)}};
 async function logout(){try{await api('logout','POST',{})}catch{}user=null;state=null;authView()}
 $('logout').onclick=logout;$('mobileLogout').onclick=logout;$('refresh').onclick=refresh;
+
+/* Public team profiles: distinct from access-control accounts. */
+const profileTemplate=()=>({id:'',name:'Новый участник',role:'',duties:'',photo:'',posX:50,posY:50,zoom:100,visible:true});
+function renderProfileList(){
+ const arr=state.teamProfiles||[];if(!profile||(!arr.some(p=>p.id===profile.id)&&profile.id))profile=arr[0]||profileTemplate();
+ $('profileList').innerHTML=arr.map((p,i)=>'<div class="project-item '+(profile?.id===p.id?'active':'')+'"><button data-profile="'+esc(p.id)+'">'+esc(p.name)+' <span class="muted">'+(p.visible?'На сайте':'Скрыт')+'</span></button><div class="row"><button class="btn small" data-profile-move="'+esc(p.id)+'" data-offset="-1" '+(i===0?'disabled':'')+'>↑</button><button class="btn small" data-profile-move="'+esc(p.id)+'" data-offset="1" '+(i===arr.length-1?'disabled':'')+'>↓</button></div></div>').join('');
+ document.querySelectorAll('[data-profile]').forEach(b=>b.onclick=()=>{profile=arr.find(p=>p.id===b.dataset.profile);renderProfileList();renderProfileEditor()});
+ document.querySelectorAll('[data-profile-move]').forEach(b=>{b.disabled=user.role==='viewer'||b.disabled;b.onclick=async()=>{const list=state.teamProfiles.map(x=>x.id),at=list.indexOf(b.dataset.profile),next=at+Number(b.dataset.offset);if(next<0||next>=list.length)return;[list[at],list[next]]=[list[next],list[at]];try{await api('team-profile-reorder','POST',{ids:list});await refresh();status('Порядок карточек сохранён','profileStatus')}catch(e){status(e.message,'profileStatus')}}});
+}
+function renderProfileEditor(){
+ if(!profile)profile=(state.teamProfiles||[])[0]||profileTemplate();
+ const values={profileName:'name',profileRole:'role',profileDuties:'duties',profilePosX:'posX',profilePosY:'posY',profileZoom:'zoom'};
+ for(const [id,key] of Object.entries(values))$(id).value=profile[key]??'';
+ $('profileVisible').checked=!!profile.visible;
+ document.querySelectorAll('#profileFields input,#profileFields textarea,#profileFields button,#newProfile,#profilePosX,#profilePosY,#profileZoom').forEach(el=>el.disabled=user.role==='viewer');
+ $('profileDelete').disabled=user.role!=='owner'||!profile.id;
+ renderProfilePreview();
+}
+function renderProfilePreview(){
+ if(!profile)return;
+ $('profilePreviewName').textContent=profile.name;
+ $('profilePreviewRole').textContent=profile.role;
+ $('profilePreviewDuties').textContent=profile.duties;
+ $('profileVisual').replaceChildren();
+ if(profile.photo){
+  const img=new Image();img.src=url(profile.photo);img.alt='Превью: '+profile.name;
+  img.style.cssText='width:100%;height:100%;object-fit:contain;transform:scale('+Number(profile.zoom||100)/100+');transform-origin:'+Number(profile.posX||50)+'% '+Number(profile.posY||50)+'%;object-position:'+Number(profile.posX||50)+'% '+Number(profile.posY||50)+'%';
+  $('profileVisual').appendChild(img);
+ }else $('profileVisual').textContent='Загрузите фотографию';
+ for(const k of ['PosX','PosY','Zoom'])$('profile'+k+'Text').textContent=(profile[k.charAt(0).toLowerCase()+k.slice(1)]||0)+'%';
+}
+for(const [id,key] of Object.entries({profileName:'name',profileRole:'role',profileDuties:'duties',profilePosX:'posX',profilePosY:'posY',profileZoom:'zoom'})){
+ $(id).addEventListener('input',()=>{profile[key]=['posX','posY','zoom'].includes(key)?Number($(id).value):$(id).value;renderProfilePreview();status('Несохранённые изменения','profileStatus')});
+}
+$('profileVisible').onchange=()=>{profile.visible=$('profileVisible').checked;status('Несохранённые изменения','profileStatus')};
+$('newProfile').onclick=()=>{profile=profileTemplate();renderProfileList();renderProfileEditor()};
+$('profileSave').onclick=async()=>{try{const x=await api('team-profile-save','POST',{profile});profile.id=x.profileId;await refresh();status('✓ Карточка сохранена и обновлена на сайте','profileStatus')}catch(e){status(e.message,'profileStatus')}};
+$('profileDelete').onclick=async()=>{if(!profile.id||!confirm('Удалить карточку с сайта?'))return;try{await api('team-profile-delete','POST',{id:profile.id});profile=null;await refresh()}catch(e){status(e.message,'profileStatus')}};
+$('profileUpload').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{status('Загружаю фотографию…','profileStatus');const data=await convert(file),x=await api('upload','POST',{data,mime:'image/jpeg'});profile.photo=x.url;renderProfilePreview();status('Фото загружено. Нажми «Сохранить профиль».','profileStatus')}catch(err){status(err.message,'profileStatus')}e.target.value=''};
+const contentLabels=[
+ ['heroCaption','Первый экран: подпись','Три строки текста, каждая с новой строки'],
+ ['introTitle','О нас: заголовок','Название раздела'],
+ ['introText','О нас: описание','Кратко о подходе студии'],
+ ['servicesIntro','Услуги: подпись','Текст возле заголовка услуг'],
+ ['portfolioIntro','Портфолио: подпись','Текст возле кейсов'],
+ ['teamIntro','Команда: подпись','Вступление к карточкам'],
+ ['teamFootnote','Под карточками команды','Например, о проектном сотрудничестве'],
+ ['aboutText','Студия: основной текст','Раздел «Внутри OOOPS»'],
+ ['contactIntro','Контакты: описание','Приглашение оставить заявку'],
+ ['contactTelegram','Ссылка Telegram','https://t.me/...'],
+ ['contactEmail','Контактный email','name@example.com'],
+ ['seoDescription','Описание для поисковиков','Коротко о студии']
+];
+function renderWebsite(){
+ const fields=$('websiteFields');fields.replaceChildren();
+ for(const [key,label,hint] of contentLabels){
+  const el=document.createElement('label');el.className='field';el.textContent=label;
+  const val=state.siteContent?.[key]||'';
+  const input=document.createElement(['introText','aboutText','heroCaption','teamFootnote'].includes(key)?'textarea':'input');
+  input.id='site-'+key;input.value=val;input.maxLength=key==='introText'?1500:600;input.placeholder=hint;input.disabled=user.role==='viewer';
+  el.appendChild(input);fields.appendChild(el);
+ }
+ $('websiteSave').disabled=user.role==='viewer';
+}
+$('websiteSave').onclick=async()=>{try{const content={};for(const [key] of contentLabels)content[key]=$('site-'+key).value;await api('site-save','POST',{content});await refresh();status('✓ Тексты опубликованы на сайте','websiteStatus')}catch(e){status(e.message,'websiteStatus')}};
+function analyticsCalc(daysBack){
+ const limit=Date.now()-(daysBack-1)*86400000,dates=[];
+ const source={},event={},totals={views:0,cases:0,contacts:0,leads:0,ai:0};
+ for(let i=daysBack-1;i>=0;i--){const date=new Date(Date.now()-i*86400000).toISOString().slice(0,10),d=state.analytics?.days?.[date]||{events:{},sources:{}};const get=k=>Number(d.events?.[k]||0);dates.push({date,views:get('page_view')});totals.views+=get('page_view');totals.cases+=get('case_view');totals.contacts+=get('contact_click');totals.leads+=get('lead_submitted');totals.ai+=get('ai_open');for(const [key,value] of Object.entries(d.sources||{}))source[key]=(source[key]||0)+value;for(const [key,value] of Object.entries(d.events||{}))event[key]=(event[key]||0)+value}
+ return {totals,dates,source,event};
+}
+function renderAnalytics(){
+ const n=Number($('analyticsWindow').value||30),a=analyticsCalc(n);
+ const stat=[['Просмотры главной',a.totals.views],['Открытия кейсов',a.totals.cases],['Клики по контактам',a.totals.contacts],['Отправлено заявок',a.totals.leads],['Открытия ИИ',a.totals.ai],['Конверсия в заявку',a.totals.views?(100*a.totals.leads/a.totals.views).toFixed(1)+'%':'—']];
+ $('analyticsStats').innerHTML=stat.map(([k,v])=>'<div class="stat"><span class="muted">'+esc(k)+'</span><b>'+esc(v)+'</b></div>').join('');
+ const max=Math.max(1,...a.dates.map(x=>x.views));
+ $('analyticsGraph').innerHTML=a.dates.map(x=>'<div class="row" style="display:grid;grid-template-columns:85px 1fr 35px;gap:9px"><span class="muted">'+x.date.slice(5)+'</span><div style="height:12px;background:#eee;border-radius:4px;overflow:hidden"><div style="height:100%;width:'+100*x.views/max+'%;background:#8927ed"></div></div><span class="small">'+x.views+'</span></div>').join('');
+ const sources={direct:'Прямые заходы',search:'Поиск',social:'Соцсети',referral:'Ссылки',internal:'Внутренние переходы'};
+ $('analyticsSources').innerHTML=Object.entries(a.source).sort((a,b)=>b[1]-a[1]).map(([k,v])=>'<p>'+esc(sources[k]||k)+': <b>'+v+'</b></p>').join('')||'<p class="muted">Данных пока нет</p>';
+ const names={page_view:'Главная',case_view:'Кейсы',contact_click:'Переходы к контактам',lead_submitted:'Успешные заявки',ai_open:'Открытия ИИ'};
+ $('analyticsEvents').innerHTML=Object.entries(a.event).map(([k,v])=>'<p>'+esc(names[k]||k)+': <b>'+v+'</b></p>').join('')||'<p class="muted">Событий пока нет</p>';
+}
+$('analyticsWindow').onchange=renderAnalytics;
+$('analyticsExport').onclick=()=>{const a=analyticsCalc(Number($('analyticsWindow').value||30));const csv='date,page_views\n'+a.dates.map(x=>x.date+','+x.views).join('\n');const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),link=document.createElement('a'),u=URL.createObjectURL(blob);link.href=u;link.download='ooops-analytics.csv';link.click();setTimeout(()=>URL.revokeObjectURL(u),1000)};
+
 initialize();
 </script></body></html>
