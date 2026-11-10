@@ -311,6 +311,23 @@ footer{max-width:1480px;margin:auto}
  .team-photo,.team-card:nth-child(n) .team-photo{height:clamp(170px,50vw,265px)!important}
  .team-info{padding:13px}
 }
+/* Layout rhythm: reduce oversized blank areas while retaining stacked case interactions. */
+@media(min-width:601px){
+  .work-section.section-pad{padding-top:90px;padding-bottom:55px}
+  .work-section .projects{gap:20px;padding-bottom:0}
+  .work-section .project,.work-section .project:nth-child(2),.work-section .project:nth-child(3),.work-section .project:nth-child(4){height:min(69vh,620px);min-height:520px}
+  .process-stage.section-pad{padding-top:65px;padding-bottom:75px}
+  .process-head{margin-bottom:42px}
+  .process-route{padding-top:38px}
+  .process-caption{margin-top:35px}
+  .team-section.section-pad{padding-top:90px;padding-bottom:95px}
+}
+@media(max-width:600px){
+  .work-section.section-pad{padding-top:62px;padding-bottom:38px}
+  .work-section .projects{padding-bottom:0}
+  .process-stage.section-pad{padding-top:52px;padding-bottom:55px}
+  .team-section.section-pad{padding-top:65px;padding-bottom:70px}
+}
 </style>
 </head>
 <body>
