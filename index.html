@@ -574,7 +574,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
   }
   team.replaceChildren(fragment);
  }
- }catch(e){console.warn('OOOPS CMS content unavailable, retaining original site')})();
+ }catch(e){console.warn('OOOPS CMS content unavailable, retaining original site')}})();
  const links=document.querySelectorAll('#contact .contact-links a');links.forEach(a=>a.addEventListener('click',()=>track('contact_click')));
  document.getElementById('ai-launch')?.addEventListener('click',()=>track('ai_open'));
  document.getElementById('contact-form')?.addEventListener('submit',()=>{ /* success is recorded after the server confirms delivery */ });
