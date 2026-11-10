@@ -480,6 +480,12 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
  const hero=document.querySelector('.hero-caption');if(hero&&c.heroCaption){hero.replaceChildren();c.heroCaption.split('\n').forEach((line,i)=>{if(i)hero.appendChild(document.createElement('br'));const t=document.createElement(i===1?'em':'span');t.textContent=line;hero.appendChild(t)})}
  if(c.introTitle&&c.introTitle!=='Идея — это начало. Дальше — дело')setText('#intro .statement h2',c.introTitle);setText('#intro .statement p',c.introText);
  setText('#services .section-head .aside',c.servicesIntro);setText('#work .section-head .aside',c.portfolioIntro);
+ setText('.hero-bottom p',c.heroBottom);
+ const services=[...document.querySelectorAll('#services .service')];
+ const originals=['Продукты и сервисы','Брендинг и сайты','Контент и креатив'];
+ services.forEach((el,i)=>{const title=el.querySelector('h3'),desc=el.querySelector('p');if(title&&c['service'+(i+1)+'Title']&&c['service'+(i+1)+'Title']!==originals[i])title.textContent=c['service'+(i+1)+'Title'];if(desc&&c['service'+(i+1)+'Text'])desc.textContent=c['service'+(i+1)+'Text']});
+ document.querySelectorAll('#process .process-step').forEach((el,i)=>{const n=i+1,title=el.querySelector('h3'),desc=el.querySelector('p');const fallback=['Разбираемся в задаче','Ищем концепцию','Собираем решение','Передаём результат'];if(title&&c['process'+n+'Title']&&c['process'+n+'Title']!==fallback[i])title.textContent=c['process'+n+'Title'];if(desc&&c['process'+n+'Text'])desc.textContent=c['process'+n+'Text']});
+ setText('footer span:last-child',c.footerText);
  setText('#team .section-head .aside',c.teamIntro);setText('#team .team-footnote',c.teamFootnote);
  setText('#about .atelier-intro p',c.aboutText);setText('#contact .contact-left>p',c.contactIntro);
  const tg=document.querySelector('#contact .contact-links a[href^="https://t.me/"]');if(tg&&c.contactTelegram)tg.href=c.contactTelegram;
