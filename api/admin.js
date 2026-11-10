@@ -1,3 +1,4 @@
+import {loadAnalytics} from './track.js';
 import {get,put,head} from '@vercel/blob';
 import {randomBytes,createHmac,scryptSync,timingSafeEqual} from 'node:crypto';
 const PATH='ooops/private/state-v1.json', TTL=12*3600;
@@ -62,7 +63,7 @@ export default async function handler(req,res){
  }
  if(action==='logout'){res.setHeader('Set-Cookie','ooops_session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0');return reply(res,200,{ok:true})}
  const user=session(req,data);if(!user)return reply(res,401,{error:'Требуется вход'});
- if(action==='state'&&req.method==='GET')return reply(res,200,{user:cleanUser(user),projects:data.projects,leads:data.leads,teamProfiles:data.teamProfiles||defaultTeam,siteContent:publicSite(data),settings:data.settings,users:user.role==='owner'?data.users.map(cleanUser):[],events:data.events.slice(0,60)});
+ if(action==='state'&&req.method==='GET'){let analytics={version:1,days:{}};try{analytics=(await loadAnalytics()).data}catch(e){console.error('Analytics read:',e?.message)}return reply(res,200,{user:cleanUser(user),projects:data.projects,leads:data.leads,teamProfiles:data.teamProfiles||defaultTeam,siteContent:publicSite(data),analytics,settings:data.settings,users:user.role==='owner'?data.users.map(cleanUser):[],events:data.events.slice(0,60)});}
  if(req.method!=='POST')return reply(res,405,{error:'Method not allowed'});
  try{
  let itemId=null;
