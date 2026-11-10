@@ -32,7 +32,7 @@ const publicTeam=d=>(d.teamProfiles||defaultTeam).filter(x=>x.visible).map(x=>({
 const publicSite=d=>({...defaultSite,...(d.siteContent||{})});
 export {publicTeam,publicSite};
 
-export async function load(){try{const blob=await get(PATH,{access:'private'});if(!blob)return {data:null,etag:null};const data=JSON.parse(await new Response(blob.stream).text());return {data,etag:blob.etag||null};}catch(e){if(e?.status===404||e?.code==='not_found'||/not found/i.test(String(e.message)))return {data:null,etag:null};throw e}}
+export async function load(){try{const blob=await get(PATH,{access:'private'});if(!blob)return {data:null,etag:null};const data=JSON.parse(await new Response(blob.stream).text());const oldDvor=data.projects?.find(p=>p.id==='dvor');if(oldDvor&&/^Двор детям$/i.test(oldDvor.title||'')){oldDvor.title='Двор.Дети';if(oldDvor.description==='Сайт проекта «Двор детям».')oldDvor.description='Сайт проекта «Двор.Дети».';}return {data,etag:blob.etag||null};}catch(e){if(e?.status===404||e?.code==='not_found'||/not found/i.test(String(e.message)))return {data:null,etag:null};throw e}}
 export async function save(data,etag){const opts={access:'private',contentType:'application/json',allowOverwrite:true};if(etag)opts.ifMatch=etag;return put(PATH,JSON.stringify(data),opts)}
 export function secret(){return process.env.OOOPS_SESSION_SECRET||''}
 function hash(pwd,salt){return scryptSync(pwd,salt,64).toString('hex')}
