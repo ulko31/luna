@@ -435,7 +435,7 @@ document.querySelectorAll('.atelier-picker').forEach(button=>button.addEventList
 const processStage=document.querySelector('.process-stage');if(processStage&&'IntersectionObserver'in window){const processObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('process-visible');processObserver.unobserve(entry.target)}})},{threshold:.2});processObserver.observe(processStage)}</script>
 <style>
 /* Live CMS portfolio: position/zoom values are edited in the OOOPS team cabinet. */
-#work .project .case-panel-real img{object-fit:cover!important;object-position:var(--x,50%) var(--y,50%)!important;transform:scale(var(--zoom,1))!important;transform-origin:var(--x,50%) var(--y,50%)!important}
+#work .project .case-panel-real img{object-fit:var(--fit,contain)!important;object-position:var(--x,50%) var(--y,50%)!important;transform:scale(var(--zoom,1))!important;transform-origin:var(--x,50%) var(--y,50%)!important}
 </style>
 <script>
 /* The original hard-coded cards remain a safe fallback before owner setup or on API failure. */
@@ -455,7 +455,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       if(p.color==='#272727')article.style.color='#fff';
       const route='/case.html?id='+encodeURIComponent(p.id);
       article.innerHTML='<div class="project-copy"><span class="project-id">'+esc(p.category)+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(p.description)+'</p><a class="case-link" href="'+route+'">Открыть кейс</a></div><div class="project-art"><div class="case-panel case-panel-real">'+(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'')+'</div></div>';
-      const img=article.querySelector('img');if(img){img.style.setProperty('--x',(Number(p.posX)||50)+'%');img.style.setProperty('--y',(Number(p.posY)||50)+'%');img.style.setProperty('--zoom',String((Number(p.zoom)||100)/100))}
+      const img=article.querySelector('img');if(img){img.style.setProperty('--x',(Number(p.posX)||50)+'%');img.style.setProperty('--y',(Number(p.posY)||50)+'%');img.style.setProperty('--zoom',String((Number(p.zoom)||100)/100));img.style.setProperty('--fit',p.coverFit==='cover'?'cover':'contain')}
       root.appendChild(article);
     });
   }catch(err){console.warn('Portfolio CMS unavailable: using existing cards')}
