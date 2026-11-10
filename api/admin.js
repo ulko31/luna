@@ -15,6 +15,18 @@ const defaultTeam=[
 {id:'alina',name:'Алина',role:'Видеопродакшн',duties:'Съёмка · Видео · Проектное участие',photo:'/assets/team/alina.svg',posX:50,posY:50,zoom:100,visible:true}
 ];
 const defaultSite={heroCaption:'Придумываем\nпроектируем\nзапускаем',introTitle:'Идея — это начало. Дальше — дело',introText:'Разрабатываем цифровые продукты, проектируем сайты и создаём визуальные решения. От пользовательской логики до деталей, которые формируют впечатление.',servicesIntro:'Три направления, одна команда. Подберём формат под задачу, а не наоборот.',portfolioIntro:'Разные задачи и разные форматы. Ссылки ведут на исходные материалы, когда они доступны.',teamIntro:'Небольшая команда и проектные специалисты. Личные роли без громких должностей.',teamFootnote:'Формируем состав проекта под конкретную задачу. Видеопродакшн подключаем при необходимости.',aboutText:'Продуктовое мышление встречается с дизайном и контентом — поэтому каждый проект мы видим целиком, а не как набор отдельных задач',contactIntro:'Расскажите, что планируете создать — предложим подход, этапы и следующий шаг',contactTelegram:'https://t.me/ulko_31',contactEmail:'uly.kozmenko@gmail.com',seoDescription:'OOOPS! — digital product & creative studio. Проектируем цифровые продукты, создаём бренды, сайты и контент.'};
+const additionalSiteDefaults={
+heroBottom:'От идеи и дизайна до работающего продукта и контента',
+service1Title:'Продукты и сервисы',service1Text:'Идея, продуктовая логика, UX/UI и разработка. Веб-приложения, Telegram Mini Apps, MVP и интерактивные сервисы.',
+service2Title:'Брендинг и сайты',service2Text:'Айдентика, лендинги и сайты. Делаем не просто красивые экраны, а понятный путь от первого впечатления до действия.',
+service3Title:'Контент и креатив',service3Text:'Контент-концепции, съёмки, короткие видео, креативы и визуальное сопровождение запуска.',
+process1Title:'Разбираемся в задаче',process1Text:'Знакомимся с проектом, аудиторией и целями',
+process2Title:'Ищем концепцию',process2Text:'Формируем идею, структуру и стиль',
+process3Title:'Собираем решение',process3Text:'Дизайн, код, видео — всё, что нужно проекту',
+process4Title:'Передаём результат',process4Text:'Проверяем, показываем и обсуждаем развитие',
+footerText:'Сайты / Продукты / Дизайн / Контент'
+};
+Object.assign(defaultSite,additionalSiteDefaults);
 const defaults=()=>({version:2,users:[],projects:bootstrap,leads:[],teamProfiles:defaultTeam,siteContent:defaultSite,settings:{telegramNotify:true,aiEnabled:true},events:[]});
 const publicTeam=d=>(d.teamProfiles||defaultTeam).filter(x=>x.visible).map(x=>({id:x.id,name:x.name,role:x.role,duties:x.duties,photo:x.photo,posX:x.posX,posY:x.posY,zoom:x.zoom}));
 const publicSite=d=>({...defaultSite,...(d.siteContent||{})});
