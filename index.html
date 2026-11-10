@@ -478,7 +478,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
  const res=await fetch('/api/public-site',{cache:'no-store'});if(!res.ok)return;const data=await res.json();if(!data.configured)return;
  const c=data.content||{};
  const hero=document.querySelector('.hero-caption');if(hero&&c.heroCaption){hero.replaceChildren();c.heroCaption.split('\n').forEach((line,i)=>{if(i)hero.appendChild(document.createElement('br'));const t=document.createElement(i===1?'em':'span');t.textContent=line;hero.appendChild(t)})}
- setText('#intro .statement h2',c.introTitle);setText('#intro .statement p',c.introText);
+ if(c.introTitle&&c.introTitle!=='Идея — это начало. Дальше — дело')setText('#intro .statement h2',c.introTitle);setText('#intro .statement p',c.introText);
  setText('#services .section-head .aside',c.servicesIntro);setText('#work .section-head .aside',c.portfolioIntro);
  setText('#team .section-head .aside',c.teamIntro);setText('#team .team-footnote',c.teamFootnote);
  setText('#about .atelier-intro p',c.aboutText);setText('#contact .contact-left>p',c.contactIntro);
@@ -491,7 +491,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
   for(const [i,p] of data.team.entries()){
    const card=document.createElement('article');card.className='team-card reveal visible';
    const visual=document.createElement('div');visual.className='team-monogram team-photo';
-   if(p.photo){const img=document.createElement('img');img.src=publicMedia(p.photo);img.alt=p.name+' — фото команды';img.loading='lazy';img.style.setProperty('--portrait-x',String(Number(p.posX)||50)+'%');img.style.setProperty('--portrait-y',String(Number(p.posY)||50)+'%');img.style.setProperty('--portrait-zoom',String((Number(p.zoom)||100)/100));visual.appendChild(img)}
+   if(p.photo){const img=document.createElement('img');img.src=publicMedia(p.photo);img.alt=p.name+' — фото команды';img.loading='lazy';img.style.setProperty('--portrait-x',String(Number(p.posX)||50)+'%');img.style.setProperty('--portrait-y',String(Number(p.posY)||50)+'%');img.style.setProperty('--portrait-zoom',String((Number(p.zoom)||100)/100));if(p.photo.startsWith('media/'))img.style.setProperty('object-fit','cover','important');visual.appendChild(img)}
    const info=document.createElement('div');info.className='team-info';
    const title=document.createElement('h3');title.textContent=p.name||'';const role=document.createElement('p');role.textContent=p.role||'';const duties=document.createElement('span');duties.textContent=p.duties||'';info.append(title,role,duties);card.append(visual,info);fragment.appendChild(card);
   }
