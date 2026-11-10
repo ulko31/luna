@@ -3,7 +3,7 @@ import {get,put,head} from '@vercel/blob';
 import {randomBytes,createHmac,scryptSync,timingSafeEqual} from 'node:crypto';
 const PATH='ooops/private/state-v1.json', TTL=12*3600;
 const bootstrap=[
-{id:'sofe',title:'SOFE',category:'Приложение / MVP',description:'Wellness-приложение: продуктовая концепция, UX, разработка и MVP.',details:'SOFE — продукт для питания и активности.',color:'#eea1c7',cover:'https://raw.githubusercontent.com/ulko31/sofe/main/images/main.png',images:[{id:'sofe-original',url:'https://raw.githubusercontent.com/ulko31/sofe/main/images/main.png'}],posX:50,posY:50,zoom:100,published:true},
+{id:'sofe',title:'SOFE',category:'Приложение / MVP',description:'Wellness-приложение: продуктовая концепция, UX, разработка и MVP.',details:'SOFE — продукт для питания и активности.',color:'#eea1c7',cover:'https://raw.githubusercontent.com/ulko31/sofe/main/images/main.png',images:[{id:'sofe-original',url:'https://raw.githubusercontent.com/ulko31/sofe/main/images/main.png'}],posX:50,posY:50,zoom:100,coverFit:'contain',published:true},
 {id:'stankevich',title:'Кружок Станкевича',category:'Сайт / Образование',description:'Дизайн сайта образовательного проекта.',details:'Работа из дизайн-портфолио.',color:'#9cc9f5',cover:'/assets/cases/stankevich.svg',images:[{id:'stank-original',url:'/assets/cases/stankevich.svg'}],posX:50,posY:50,zoom:100,published:true},
 {id:'artcorpus',title:'АртКорпус',category:'Графика / Дизайн',description:'Графический проект из дизайн-портфолио.',details:'Визуальная коммуникация за пределами интерфейсов.',color:'#272727',cover:'/assets/cases/artcorpus.svg',images:[{id:'art-original',url:'/assets/cases/artcorpus.svg'}],posX:50,posY:50,zoom:100,published:true},
 {id:'dvor',title:'Двор детям',category:'Сайт',description:'Сайт проекта «Двор детям».',details:'',color:'#f8d375',cover:'/assets/cases/dvor.svg',images:[{id:'dvor-original',url:'/assets/cases/dvor.svg'}],posX:50,posY:50,zoom:100,published:true}
@@ -48,7 +48,7 @@ function safeProject(x,existing){
  const id=existing?.id||randomBytes(8).toString('hex');
  const urls=(Array.isArray(x.images)?x.images:[]).slice(0,40).map(im=>({id:str(im.id,100)||randomBytes(8).toString('hex'),url:str(im.url,1000),caption:str(im.caption,140)})).filter(im=>/^(\/assets\/cases\/|https:\/\/raw\.githubusercontent\.com\/ulko31\/sofe\/main\/images\/|media\/)/.test(im.url));
  const cover=str(x.cover,1000);
- return {id,title:str(x.title,100)||'Без названия',category:str(x.category,90),description:str(x.description,600),details:str(x.details,5000),color:/^#[0-9a-f]{6}$/i.test(x.color)?x.color:'#d7adff',cover:urls.some(i=>i.url===cover)?cover:(urls[0]?.url||''),images:urls,posX:Math.max(0,Math.min(100,Number(x.posX)||50)),posY:Math.max(0,Math.min(100,Number(x.posY)||50)),zoom:Math.max(100,Math.min(200,Number(x.zoom)||100)),published:existing?.published??false};
+ return {id,title:str(x.title,100)||'Без названия',category:str(x.category,90),description:str(x.description,600),details:str(x.details,5000),color:/^#[0-9a-f]{6}$/i.test(x.color)?x.color:'#d7adff',cover:urls.some(i=>i.url===cover)?cover:(urls[0]?.url||''),images:urls,posX:Math.max(0,Math.min(100,Number(x.posX)||50)),posY:Math.max(0,Math.min(100,Number(x.posY)||50)),zoom:Math.max(100,Math.min(200,Number(x.zoom)||100)),coverFit:x.coverFit==='cover'?'cover':'contain',published:existing?.published??false};
 }
 function log(d,user,action){d.events.unshift({action,by:user.email,at:new Date().toISOString()});d.events=d.events.slice(0,150)}
 export default async function handler(req,res){
