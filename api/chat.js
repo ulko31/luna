@@ -1,3 +1,4 @@
+import {load} from './admin.js';
 const STUDIO_CONTEXT = [
   'Ты — ассистент студии OOOPS! digital product & creative studio',
   'Отвечай только на вопросы об услугах, портфолио и формате сотрудничества',
@@ -15,6 +16,7 @@ export default async function handler(req,res){
   if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   const question=typeof req.body?.question==='string'?req.body.question.trim():'';
   if(!question||question.length>450)return res.status(400).json({error:'Invalid question'});
+  try{const {data}=await load();if(data?.settings?.aiEnabled===false)return res.status(503).json({error:'Assistant disabled by administrator'});}catch{}
   const accountId=process.env.CF_ACCOUNT_ID,token=process.env.CF_API_TOKEN;
   if(!accountId||!token)return res.status(503).json({error:'Assistant temporarily unavailable'});
   const isRussian = text => (text.match(/[А-Яа-яЁё]/g)||[]).length >= 12;
