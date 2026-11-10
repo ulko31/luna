@@ -1,5 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="OOOPS!">
- <rect width="128" height="128" rx="27" fill="#1B1B1B"/>
- <path d="M37 97V31h32c20 0 31 11 31 29S89 89 69 89H55v8H37Zm18-25h14c9 0 14-4 14-12s-5-12-14-12H55v24Z" fill="#A63AF7"/>
- <circle cx="101" cy="100" r="10" fill="#D9FB45"/>
+<title>OOOPS! — O</title>
+<rect width="128" height="128" rx="24" fill="#070707"/>
+<g transform="rotate(28 58 69)">
+<ellipse cx="56" cy="73" rx="34" ry="44" fill="#A932F5"/>
+<ellipse cx="56" cy="73" rx="17" ry="25" fill="#070707"/>
+</g>
+<g fill="#C9FF2E">
+<path d="M82 15Q84 10 89 12L94 15Q97 17 95 22L88 40Q86 44 81 42Q77 41 78 36Z"/>
+<path d="M102 26Q105 22 109 25L116 31Q119 34 115 38L100 51Q96 54 92 50Q89 47 92 43Z"/>
+<path d="M109 52Q114 50 116 55L119 63Q120 68 114 69L101 70Q96 70 96 65Q95 61 100 59Z"/>
+</g>
 </svg>
