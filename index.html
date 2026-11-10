@@ -205,6 +205,16 @@ footer{max-width:1480px;margin:auto}
 }
 @media(max-width:360px){.contact.wrap{padding-left:22px!important;padding-right:22px!important}.contact h2{font-size:42px!important}.journey-step strong{font-size:17px}}
 @media(prefers-reduced-motion:reduce){.journey-marker,.journey-progress,.atelier-sheet{transition:none}}
+
+/* Team photography: original images without regenerated faces */
+.team-card{overflow:hidden;min-width:0}
+.team-photo{height:clamp(210px,27vw,330px)!important;background:transparent!important;display:block!important;position:relative;overflow:hidden}
+.team-photo img{width:100%;height:100%;display:block;object-fit:cover;object-position:top center;transition:transform .45s cubic-bezier(.2,.8,.3,1)}
+.team-card:hover .team-photo img{transform:scale(1.035) rotate(-1deg)}
+.team-grid{align-items:stretch}
+@media(max-width:850px){.team-photo{height:clamp(200px,35vw,310px)!important}}
+@media(max-width:600px){.team-photo{height:clamp(190px,50vw,270px)!important}.team-info{padding:15px}.team-info h3{font-size:22px}}
+@media(prefers-reduced-motion:reduce){.team-photo img{transition:none}}
 </style>
 </head>
 <body>
@@ -240,7 +250,7 @@ footer{max-width:1480px;margin:auto}
 <section class="wrap section-pad" id="process"><div class="section-head"><h2 class="reveal">Никакой<br><em>магии.</em> Процесс.</h2></div><div class="approach"><div class="approach-card reveal"><span class="n">01</span><h3>Погружаемся</h3><p>Задаём вопросы, разбираемся в бизнесе, задачах и пользователях.</p></div><div class="approach-card reveal"><span class="n">02</span><h3>Придумываем</h3><p>Предлагаем концепцию, структуру и понятный объём работ.</p></div><div class="approach-card reveal"><span class="n">03</span><h3>Создаём</h3><p>Проектируем, разрабатываем, снимаем и собираем — по задаче.</p></div><div class="approach-card reveal"><span class="n">04</span><h3>Передаём</h3><p>Проверяем результат, показываем, как использовать, и обсуждаем развитие.</p></div></div></section>
 
 <section class="team-section section-pad" id="team"><div class="wrap"><div class="section-head"><h2 class="reveal">Наша<br><em>команда</em></h2><p class="aside">Небольшая команда и проектные специалисты. Личные роли без громких должностей.</p></div><div class="team-grid">
-<article class="team-card reveal"><div class="team-monogram">У</div><div class="team-info"><h3>Ульяна</h3><p>Продукт и разработка</p><span>Продуктовая стратегия · Разработка · Контент</span></div></article><article class="team-card reveal"><div class="team-monogram">А</div><div class="team-info"><h3>Алия</h3><p>Дизайн и digital</p><span>UI/UX · Брендинг · Дизайн сайтов</span></div></article><article class="team-card reveal"><div class="team-monogram">И</div><div class="team-info"><h3>Илона</h3><p>Соцсети и контент</p><span>Контент-план · Публикации · Координация</span></div></article><article class="team-card reveal"><div class="team-monogram">А</div><div class="team-info"><h3>Алина</h3><p>Видеопродакшн</p><span>Съёмка · Видео · Проектное участие</span></div></article>
+<article class="team-card reveal"><div class="team-monogram team-photo"><img src="/assets/team/ulyana.svg" alt="Ульяна — оригинальная фотография с графическими элементами" loading="lazy"></div><div class="team-info"><h3>Ульяна</h3><p>Продукт и разработка</p><span>Продуктовая стратегия · Разработка · Контент</span></div></article><article class="team-card reveal"><div class="team-monogram team-photo"><img src="/assets/team/aliya.svg" alt="Алия — оригинальная фотография с графическими элементами" loading="lazy"></div><div class="team-info"><h3>Алия</h3><p>Дизайн и digital</p><span>UI/UX · Брендинг · Дизайн сайтов</span></div></article><article class="team-card reveal"><div class="team-monogram team-photo"><img src="/assets/team/ilona.svg" alt="Илона — оригинальная фотография с графическими элементами" loading="lazy"></div><div class="team-info"><h3>Илона</h3><p>Соцсети и контент</p><span>Контент-план · Публикации · Координация</span></div></article><article class="team-card reveal"><div class="team-monogram team-photo"><img src="/assets/team/alina.svg" alt="Алина — оригинальная фотография с графическими элементами" loading="lazy"></div><div class="team-info"><h3>Алина</h3><p>Видеопродакшн</p><span>Съёмка · Видео · Проектное участие</span></div></article>
 </div><p class="team-footnote">Формируем состав проекта под конкретную задачу. Видеопродакшн подключаем при необходимости.</p></div></section><section class="about atelier" id="about"><div class="wrap">
 <div class="atelier-intro"><div><span class="eyebrow">ВНУТРИ OOOPS</span><h2>Не просто<br><em>ещё одна</em><br>студия</h2></div><p>Продуктовое мышление встречается с дизайном и контентом — поэтому каждый проект мы видим целиком, а не как набор отдельных задач</p></div>
 <div class="atelier-desk" aria-label="Наши направления">
