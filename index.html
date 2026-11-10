@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f5f3ef">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
 <meta name="description" content="OOOPS! — digital product & creative studio. Проектируем цифровые продукты, создаём бренды, сайты и контент.">
 <title>OOOPS! — digital product & creative studio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -329,6 +333,11 @@ footer{max-width:1480px;margin:auto}
   .team-section.section-pad{padding-top:65px;padding-bottom:70px}
 }
 
+/* Keep conversation bubbles inside their own scroll region and action row above the footer. */
+.ai-head{position:relative!important;flex:0 0 auto!important}
+.ai-messages{position:relative!important;flex:1 1 auto!important;overscroll-behavior:contain!important;scroll-padding-top:16px!important;overflow-y:auto!important}
+.ai-quick,.ai-compose,.ai-foot{flex:0 0 auto!important}
+.ai-panel{isolation:isolate}
 /* OOOPS / tailored assistant: same type system as the studio, not a generic embed. */
 .ai-launch{
   font-family:'DM Sans',sans-serif!important;font-size:13px!important;font-weight:700!important;
@@ -484,19 +493,19 @@ form.addEventListener('submit',async(e)=>{e.preventDefault();if(!form.reportVali
 
 const aiPanel=document.getElementById('ai-panel'),aiLaunch=document.getElementById('ai-launch'),aiClose=document.getElementById('ai-close'),aiMessages=document.getElementById('ai-messages'),aiInput=document.getElementById('ai-input');
 const faq=[
-[/услуг|делаете|умеете|направлен/i,'Мы проектируем и разрабатываем цифровые продукты и MVP, создаём сайты и айдентику, снимаем и оформляем контент для брендов'],
-[/кейс|работ|проект|портфолио|пример/i,'В портфолио есть приложение SOFE, сайт кружка Станкевича, графический проект АртКорпус и другие работы. Исходные материалы доступны по ссылкам на карточках'],
-[/цен|стоим|бюджет|сколько|тариф/i,'Стоимость зависит от задачи и объёма работ. Напишите о своём проекте через форму или Telegram @ulko_31 — команда уточнит детали и подготовит оценку'],
-[/срок|недел|долго|месяц/i,'Сроки зависят от формата и сложности проекта. Сначала уточняем задачу, затем согласуем этапы и реалистичный график'],
-[/контакт|связ|сотруднич|заказ|нача|бриф/i,'Начать просто: расскажите о задаче в форме сайта или напишите в Telegram @ulko_31'],
-[/ии|искусственн|автоматизац|бот/i,'Можем обсудить AI-функции в цифровых продуктах. Технические решения подбираем под задачу, без обещаний до оценки']
+[/обсуд|сотруднич|связат|написат|заказ|нача|бриф|контакт|телеграм|email|почт/i,'Обсудить проект можно через кнопку «Обсудить проект» на сайте или напрямую в Telegram @ulko_31. Расскажите о задаче и примерных сроках — команда предложит следующий шаг.'],
+[/цен|стоим|бюджет|сколько|тариф/i,'Стоимость зависит от задачи, объёма и сроков. Оставьте заявку через форму или напишите в Telegram @ulko_31 для индивидуальной оценки.'],
+[/срок|недел|долго|месяц/i,'Сроки зависят от сложности проекта. После знакомства с задачей команда предложит этапы и реалистичный график.'],
+[/кейс|портфолио|пример|работ/i,'В портфолио OOOPS есть SOFE, «Кружок Станкевича», «АртКорпус» и «Двор.Дети». Откройте раздел «Проекты», чтобы посмотреть изображения и подробнее узнать о каждом кейсе.'],
+[/услуг|делаете|умеете|направлен|сайт|дизайн|разработ|брендинг/i,'OOOPS проектирует сайты, цифровые продукты и MVP, создаёт айдентику и контент. Расскажите о задаче — подскажем подходящий формат.'],
+[/ии|искусственн|автоматизац|бот/i,'Можем обсудить AI-функции в цифровых продуктах. Решение подбираем под цели и объём проекта.']
 ];
-const fallback=q=>faq.find(pair=>pair[0].test(q))?.[1]||'Могу помочь с услугами, кейсами и началом сотрудничества. Для индивидуальной оценки проекта напишите в Telegram @ulko_31';
+const fallback=q=>faq.find(pair=>pair[0].test(q))?.[1]||'Помогу с услугами, портфолио и началом сотрудничества. Расскажите о своей задаче или напишите команде в Telegram @ulko_31.';
 function aiMessage(kind,value){const node=document.createElement('p');node.className='ai-message '+kind;node.textContent=value;aiMessages.appendChild(node);aiMessages.scrollTop=aiMessages.scrollHeight;return node}
 function aiToggle(show){aiPanel.hidden=!show;aiLaunch.setAttribute('aria-expanded',String(show));if(show)aiInput.focus()}
 aiLaunch.addEventListener('click',()=>aiToggle(aiPanel.hidden));aiClose.addEventListener('click',()=>aiToggle(false));document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!aiPanel.hidden)aiToggle(false)});
 let aiBusy=false;
-async function aiAsk(q){q=q.trim().slice(0,450);if(!q||aiBusy)return;aiBusy=true;aiMessage('user',q);aiInput.value='';const reply=aiMessage('bot','Уточняю ответ…');try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});const d=await r.json();if(!r.ok||typeof d.answer!=='string'||!d.answer.trim())throw Error('offline');reply.textContent=d.answer.trim().slice(0,2200)}catch{reply.textContent=fallback(q)+'\n\nСейчас отвечаю по справке студии: генеративный ИИ недоступен'}finally{aiBusy=false}}
+async function aiAsk(q){q=q.trim().slice(0,450);if(!q||aiBusy)return;aiBusy=true;aiMessage('user',q);aiInput.value='';const reply=aiMessage('bot','Уточняю ответ…');try{const r=await fetch('/api/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({question:q})});const d=await r.json();if(!r.ok||typeof d.answer!=='string'||!d.answer.trim())throw Error('offline');reply.textContent=d.answer.trim().slice(0,2200)}catch{reply.textContent=fallback(q)}finally{aiBusy=false}}
 document.getElementById('ai-form').addEventListener('submit',e=>{e.preventDefault();aiAsk(aiInput.value)});document.querySelectorAll('.ai-quick button').forEach(b=>b.addEventListener('click',()=>aiAsk(b.dataset.question)));
 
 
