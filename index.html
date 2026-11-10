@@ -397,7 +397,7 @@ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 if(!reduced && 'IntersectionObserver' in window){const observer=new IntersectionObserver(entries=>entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');observer.unobserve(e.target)}}),{threshold:.1});document.querySelectorAll('.reveal').forEach(el=>observer.observe(el));}else document.querySelectorAll('.reveal').forEach(el=>el.classList.add('visible'));
 if(!reduced){let tick=false;window.addEventListener('scroll',()=>{if(tick)return;tick=true;requestAnimationFrame(()=>{const y=Math.min(window.scrollY,700);document.querySelectorAll('[data-parallax]').forEach(el=>{const offset=Number(el.dataset.parallax)*y;el.style.translate='0 '+offset+'px';});tick=false;});},{passive:true});}
 const form=document.getElementById('contact-form'),status=document.getElementById('form-status'),submit=document.getElementById('submit-btn');
-form.addEventListener('submit',async(e)=>{e.preventDefault();if(!form.reportValidity())return;submit.disabled=true;submit.textContent='Отправляем…';status.textContent='';const data=Object.fromEntries(new FormData(form).entries());try{const response=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let result={};try{result=await response.json()}catch{}if(!response.ok||!result.ok)throw new Error('Заявка не отправлена');form.reset();status.style.color='#267047';status.textContent='Готово! Заявка отправлена, свяжемся с вами по указанному контакту.';}catch(err){status.style.color='#a12e39';status.textContent='Не удалось отправить заявку. Напишите нам напрямую в Telegram или на почту — ссылки слева.';}finally{submit.disabled=false;submit.textContent='Отправить заявку';}});
+form.addEventListener('submit',async(e)=>{e.preventDefault();if(!form.reportValidity())return;submit.disabled=true;submit.textContent='Отправляем…';status.textContent='';const data=Object.fromEntries(new FormData(form).entries());try{const response=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});let result={};try{result=await response.json()}catch{}if(!response.ok||!result.ok)throw new Error('Заявка не отправлена');form.reset();if(window.ooopsTrack)window.ooopsTrack('lead_submitted');status.style.color='#267047';status.textContent='Готово! Заявка отправлена, свяжемся с вами по указанному контакту.';}catch(err){status.style.color='#a12e39';status.textContent='Не удалось отправить заявку. Напишите нам напрямую в Telegram или на почту — ссылки слева.';}finally{submit.disabled=false;submit.textContent='Отправить заявку';}});
 
 const aiPanel=document.getElementById('ai-panel'),aiLaunch=document.getElementById('ai-launch'),aiClose=document.getElementById('ai-close'),aiMessages=document.getElementById('ai-messages'),aiInput=document.getElementById('ai-input');
 const faq=[
@@ -459,6 +459,48 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       root.appendChild(article);
     });
   }catch(err){console.warn('Portfolio CMS unavailable: using existing cards')}
+})();
+</script>
+
+<style>
+/* Published team image editing remains faithful to the site's original portrait treatment. */
+.team-grid .team-photo img{object-position:var(--portrait-x,50%) var(--portrait-y,50%)!important;transform:scale(var(--portrait-zoom,1))!important;transform-origin:var(--portrait-x,50%) var(--portrait-y,50%)!important}
+.team-grid .team-card:hover .team-photo img{transform:scale(var(--portrait-zoom,1))!important}
+</style>
+<script>
+(function(){
+ const publicMedia=u=>typeof u==='string'&&u.startsWith('media/')?'/api/media?key='+encodeURIComponent(u):u;
+ const setText=(selector,txt)=>{const el=document.querySelector(selector);if(el&&typeof txt==='string')el.textContent=txt};
+ const track=(event,path='/')=>{if(navigator.doNotTrack==='1'||navigator.globalPrivacyControl===true)return;const ref=document.referrer;let source='direct';if(ref){try{const host=new URL(ref).hostname.toLowerCase();source=host===location.hostname?'internal':/google|bing|yandex|duckduckgo/.test(host)?'search':/instagram|tiktok|vk.com|t.me|facebook|youtube/.test(host)?'social':'referral'}catch{}}fetch('/api/track',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({event,path,source}),keepalive:true}).catch(()=>{})};
+ window.ooopsTrack=track;
+ track('page_view');
+ (async()=>{try{
+ const res=await fetch('/api/public-site',{cache:'no-store'});if(!res.ok)return;const data=await res.json();if(!data.configured)return;
+ const c=data.content||{};
+ const hero=document.querySelector('.hero-caption');if(hero&&c.heroCaption){hero.replaceChildren();c.heroCaption.split('\n').forEach((line,i)=>{if(i)hero.appendChild(document.createElement('br'));const t=document.createElement(i===1?'em':'span');t.textContent=line;hero.appendChild(t)})}
+ setText('#intro .statement h2',c.introTitle);setText('#intro .statement p',c.introText);
+ setText('#services .section-head .aside',c.servicesIntro);setText('#work .section-head .aside',c.portfolioIntro);
+ setText('#team .section-head .aside',c.teamIntro);setText('#team .team-footnote',c.teamFootnote);
+ setText('#about .atelier-intro p',c.aboutText);setText('#contact .contact-left>p',c.contactIntro);
+ const tg=document.querySelector('#contact .contact-links a[href^="https://t.me/"]');if(tg&&c.contactTelegram)tg.href=c.contactTelegram;
+ const mail=document.querySelector('#contact .contact-links a[href^="mailto:"]');if(mail&&c.contactEmail)mail.href='mailto:'+c.contactEmail;
+ const meta=document.querySelector('meta[name="description"]');if(meta&&c.seoDescription)meta.content=c.seoDescription;
+ const team=document.querySelector('#team .team-grid');
+ if(team&&Array.isArray(data.team)){
+  const fragment=document.createDocumentFragment();
+  for(const [i,p] of data.team.entries()){
+   const card=document.createElement('article');card.className='team-card reveal visible';
+   const visual=document.createElement('div');visual.className='team-monogram team-photo';
+   if(p.photo){const img=document.createElement('img');img.src=publicMedia(p.photo);img.alt=p.name+' — фото команды';img.loading='lazy';img.style.setProperty('--portrait-x',String(Number(p.posX)||50)+'%');img.style.setProperty('--portrait-y',String(Number(p.posY)||50)+'%');img.style.setProperty('--portrait-zoom',String((Number(p.zoom)||100)/100));visual.appendChild(img)}
+   const info=document.createElement('div');info.className='team-info';
+   const title=document.createElement('h3');title.textContent=p.name||'';const role=document.createElement('p');role.textContent=p.role||'';const duties=document.createElement('span');duties.textContent=p.duties||'';info.append(title,role,duties);card.append(visual,info);fragment.appendChild(card);
+  }
+  team.replaceChildren(fragment);
+ }
+ }catch(e){console.warn('OOOPS CMS content unavailable, retaining original site')})();
+ const links=document.querySelectorAll('#contact .contact-links a');links.forEach(a=>a.addEventListener('click',()=>track('contact_click')));
+ document.getElementById('ai-launch')?.addEventListener('click',()=>track('ai_open'));
+ document.getElementById('contact-form')?.addEventListener('submit',()=>{ /* success is recorded after the server confirms delivery */ });
 })();
 </script>
 </body></html>
