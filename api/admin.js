@@ -54,7 +54,8 @@ export default async function handler(req,res){
  if(action==='state'&&req.method==='GET')return reply(res,200,{user:cleanUser(user),projects:data.projects,leads:data.leads,settings:data.settings,users:user.role==='owner'?data.users.map(cleanUser):[],events:data.events.slice(0,60)});
  if(req.method!=='POST')return reply(res,405,{error:'Method not allowed'});
  try{
- if(action==='project-save'){if(!canEdit(user))return reply(res,403,{error:'Нет прав'});const x=req.body?.project||{},idx=data.projects.findIndex(p=>p.id===x.id),prev=idx<0?null:data.projects[idx];const item=safeProject(x,prev);if(idx<0)data.projects.push(item);else data.projects[idx]=item;log(data,user,'Обновление кейса '+item.title);}
+ let itemId=null;
+ if(action==='project-save'){if(!canEdit(user))return reply(res,403,{error:'Нет прав'});const x=req.body?.project||{},idx=data.projects.findIndex(p=>p.id===x.id),prev=idx<0?null:data.projects[idx];const item=safeProject(x,prev);itemId=item.id;if(idx<0)data.projects.push(item);else data.projects[idx]=item;log(data,user,'Обновление кейса '+item.title);}
  else if(action==='project-publish'){if(!canEdit(user))return reply(res,403,{error:'Нет прав'});const x=data.projects.find(p=>p.id===req.body?.id);if(!x)return reply(res,404,{error:'Кейс не найден'});x.published=!!req.body.published;log(data,user,(x.published?'Публикация ':'Скрытие ')+x.title);}
  else if(action==='project-delete'){if(user.role!=='owner')return reply(res,403,{error:'Только владелец'});data.projects=data.projects.filter(p=>p.id!==req.body?.id);log(data,user,'Удаление кейса');}
  else if(action==='lead-update'){if(!canEdit(user))return reply(res,403,{error:'Нет прав'});const lead=data.leads.find(x=>x.id===req.body?.id);if(!lead)return reply(res,404,{error:'Заявка не найдена'});lead.status=['new','in-progress','proposal','done'].includes(req.body?.status)?req.body.status:lead.status;lead.note=String(req.body?.note||'').slice(0,1500);log(data,user,'Обновление заявки');}
@@ -64,6 +65,6 @@ export default async function handler(req,res){
  else if(action==='password'){const pwd=String(req.body?.password||'');if(pwd.length<12||pwd.length>128)return reply(res,400,{error:'Пароль от 12 символов'});user.salt=randomBytes(16).toString('hex');user.hash=hash(pwd,user.salt);user.version++;log(data,user,'Смена пароля');}
  else if(action==='upload'){if(!canEdit(user))return reply(res,403,{error:'Нет прав'});const mime=String(req.body?.mime||''),raw=String(req.body?.data||'');if(!/^image\/(jpeg|png|webp)$/.test(mime)||raw.length>3e6)return reply(res,400,{error:'JPEG/PNG/WebP до 2 МБ'});const bytes=Buffer.from(raw,'base64');if(bytes.length>2200000||bytes.length<20)return reply(res,400,{error:'Неверный размер'});const path='media/'+randomBytes(16).toString('hex')+({ 'image/jpeg':'.jpg','image/png':'.png','image/webp':'.webp'}[mime]);await put(path,bytes,{access:'private',contentType:mime});return reply(res,200,{url:path});}
  else return reply(res,404,{error:'Unknown action'});
- await save(data,etag);return reply(res,200,{ok:true});
+ await save(data,etag);return reply(res,200,{ok:true,projectId:action==='project-save'?itemId:null});
  }catch(e){console.error('OOOPS admin write:',e.message);return reply(res,409,{error:'Не удалось сохранить. Обновите данные и повторите.'})}
 }
