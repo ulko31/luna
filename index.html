@@ -433,4 +433,32 @@ const deskSheet=document.querySelector('.atelier-sheet'),deskNote=document.query
 document.querySelectorAll('.atelier-picker').forEach(button=>button.addEventListener('click',()=>{const type=button.dataset.desk;const data=deskOptions[type];if(!data)return;document.querySelectorAll('.atelier-picker').forEach(b=>{const active=b===button;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});document.getElementById('atelier-small').textContent=data.small;document.getElementById('atelier-kind').textContent=data.kind;document.getElementById('atelier-keyword').innerHTML=data.keyword;document.getElementById('atelier-detail').textContent=data.detail;document.getElementById('atelier-sample-label').textContent=data.sample;deskSheet.style.background=data.color;deskNote.style.background=data.note;deskSheet.style.transform='rotate('+(type==='product'?-4:type==='design'?2:-1)+'deg)'}));
 
 const processStage=document.querySelector('.process-stage');if(processStage&&'IntersectionObserver'in window){const processObserver=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('process-visible');processObserver.unobserve(entry.target)}})},{threshold:.2});processObserver.observe(processStage)}</script>
+<style>
+/* Live CMS portfolio: position/zoom values are edited in the OOOPS team cabinet. */
+#work .project .case-panel-real img{object-fit:cover!important;object-position:var(--x,50%) var(--y,50%)!important;transform:scale(var(--zoom,1))!important;transform-origin:var(--x,50%) var(--y,50%)!important}
+</style>
+<script>
+/* The original hard-coded cards remain a safe fallback before owner setup or on API failure. */
+(async function(){
+  const root=document.querySelector('#work .projects');if(!root)return;
+  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const media=s=>s?.startsWith('media/')?'/api/media?key='+encodeURIComponent(s):s;
+  try{
+    const response=await fetch('/api/public-projects',{cache:'no-store'});if(!response.ok)return;
+    const result=await response.json();if(!result.configured)return;
+    root.replaceChildren();
+    result.projects.forEach((p,i)=>{
+      const article=document.createElement('article');
+      article.className='project'+(p.color==='#272727'?' case-dark':'');
+      article.style.setProperty('--layer',i);
+      article.style.setProperty('background-color',p.color,'important');
+      if(p.color==='#272727')article.style.color='#fff';
+      const route='/case.html?id='+encodeURIComponent(p.id);
+      article.innerHTML='<div class="project-copy"><span class="project-id">'+esc(p.category)+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(p.description)+'</p><a class="case-link" href="'+route+'">Открыть кейс</a></div><div class="project-art"><div class="case-panel case-panel-real">'+(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'')+'</div></div>';
+      const img=article.querySelector('img');if(img){img.style.setProperty('--x',(Number(p.posX)||50)+'%');img.style.setProperty('--y',(Number(p.posY)||50)+'%');img.style.setProperty('--zoom',String((Number(p.zoom)||100)/100))}
+      root.appendChild(article);
+    });
+  }catch(err){console.warn('Portfolio CMS unavailable: using existing cards')}
+})();
+</script>
 </body></html>
