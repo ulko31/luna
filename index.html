@@ -160,7 +160,9 @@ footer{max-width:1480px;margin:auto}
 .services .service.reveal.visible:hover,.services .service.reveal.visible:focus-within{transform:translateY(-12px) rotate(0deg)}
 .project:focus-within{outline:3px solid #8424ea;outline-offset:2px}
 @media(max-width:600px){.services .service.reveal.visible.service-design{transform:rotate(2deg)}.services .service.reveal.visible.service-content{transform:rotate(-2deg)}.services .service.reveal.visible:hover,.services .service.reveal.visible:focus-within{transform:translateY(-6px) rotate(0deg)}}
-.project-title-link{color:inherit;text-decoration:none}.project-title-link:hover{text-decoration:none;opacity:.7}
+/* Case headings are links: override the generic .project a 13px rule. */
+.project h3 .project-title-link{display:inline-block;color:inherit;font:inherit;letter-spacing:inherit;line-height:inherit;text-decoration:none}
+.project h3 .project-title-link:hover{text-decoration:none;opacity:.85}
 
 /* STRUCTURE V4 — no floating non-sequitur, a real project journey */
 .journey{background:#f5f3ef;padding:55px 0 115px;position:relative;overflow:hidden}
