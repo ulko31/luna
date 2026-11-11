@@ -58,7 +58,8 @@ export default async function handler(req,res){
  const outcome=story.impact||'Результат — подготовленный проектный материал; количественные показатели не заявляются.';
  const deliverables=(Array.isArray(story.deliverables)&&story.deliverables.length?story.deliverables:['Структура проекта','Дизайн и ключевые экраны','Проверка основных сценариев']).slice(0,10);
  const url='https://ooops.agency/portfolio/'+encodeURIComponent(id);
- const title=p.title+' — кейс digital-студии OOOPS';
+ const isArchive=String(story.kind||'').toLowerCase().includes('архив');
+ const title=p.title+(isArchive?' — дизайн-портфолио OOOPS':' — кейс digital-студии OOOPS');
  const desc=String(p.description||headline).slice(0,160);
  const cover=safeImg(p.cover);
  const images=(Array.isArray(p.images)?p.images:[]).map(x=>({url:safeImg(x.url),caption:x.caption||p.title})).filter(x=>x.url);
@@ -80,7 +81,7 @@ export default async function handler(req,res){
 <div class="wrap"><div class="big-visual" style="--caseColor:${accent}">${coverMarkup}<span class="corner">OOOPS! / ${esc(p.title)}</span></div><div class="index-row"><a href="#challenge">01 Задача</a><a href="#approach">02 Подход</a><a href="#solution">03 Что сделали</a>${demo?'<a href="#demo">04 Демо</a>':''}${images.length?'<a href="#gallery">05 Галерея</a>':''}<a href="#outcome">Результат</a></div></div>
 <section class="wrap section" id="challenge"><div class="cols"><div class="overline">01 / ЗАДАЧА</div><div><h2>С чего всё началось</h2><p class="bodycopy">${esc(challenge)}</p></div></div></section>
 <section class="wrap section" id="approach"><div class="cols"><div class="overline">02 / ПОДХОД</div><div><h2>Мысль за решением</h2><p class="bodycopy">${esc(approach)}</p></div></div></section>
-<section class="wrap section" id="solution"><div class="cols"><div class="overline">03 / РЕШЕНИЕ</div><div><h2>Что мы сделали</h2><ul class="deliverables">${deliverables.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul></div></div></section>
+<section class="wrap section" id="solution"><div class="cols"><div class="overline">03 / РЕШЕНИЕ</div><div><h2>Что сделано</h2><ul class="deliverables">${deliverables.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul></div></div></section>
 ${demoHtml}${walkthrough}${gallery}
 <section class="wrap section" id="outcome"><div class="impact"><span class="overline">РЕЗУЛЬТАТ</span><h2 style="margin-top:20px">Что получилось</h2><p class="bodycopy">${esc(outcome)}</p>${story.insight?'<div class="insight"><strong>Главная мысль:</strong><span>'+esc(story.insight)+'</span></div>':''}</div></section>
 <section class="wrap end"><span class="overline">NEXT / OOOPS!</span><h2>Есть похожая<br>задача?</h2><p class="bodycopy" style="margin-bottom:28px">Расскажите, что хотите создать. Мы поможем определить направление и следующий шаг.</p><a class="button" href="/#contact">Обсудить проект ↗</a><p style="margin-top:35px"><a href="/#work">← Вернуться ко всем кейсам</a></p></section>
