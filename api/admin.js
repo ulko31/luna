@@ -1,4 +1,5 @@
 import {loadAnalytics} from './track.js';
+import {supplementary} from './case-stories.js';
 import {get,put,head} from '@vercel/blob';
 import {randomBytes,createHmac,scryptSync,timingSafeEqual} from 'node:crypto';
 const PATH='ooops/private/state-v1.json', TTL=12*3600;
@@ -32,7 +33,7 @@ const publicTeam=d=>(d.teamProfiles||defaultTeam).filter(x=>x.visible).map(x=>({
 const publicSite=d=>{const content={...defaultSite,...(d.siteContent||{})};if(content.contactEmail==='uly.kozmenko@gmail.com')content.contactEmail='ooopsagency@outlook.com';if(content.seoDescription==='OOOPS! — digital product & creative studio. Проектируем цифровые продукты, создаём бренды, сайты и контент.')content.seoDescription=defaultSite.seoDescription;return content;};
 export {publicTeam,publicSite};
 
-export async function load(){try{const blob=await get(PATH,{access:'private'});if(!blob)return {data:null,etag:null};const data=JSON.parse(await new Response(blob.stream).text());const oldDvor=data.projects?.find(p=>p.id==='dvor');if(oldDvor&&/^Двор детям$/i.test(oldDvor.title||'')){oldDvor.title='Двор.Дети';if(oldDvor.description==='Сайт проекта «Двор детям».')oldDvor.description='Сайт проекта «Двор.Дети».';}return {data,etag:blob.etag||null};}catch(e){if(e?.status===404||e?.code==='not_found'||/not found/i.test(String(e.message)))return {data:null,etag:null};throw e}}
+export async function load(){try{const blob=await get(PATH,{access:'private'});if(!blob)return {data:null,etag:null};const data=JSON.parse(await new Response(blob.stream).text());const oldDvor=data.projects?.find(p=>p.id==='dvor');if(oldDvor&&/^Двор детям$/i.test(oldDvor.title||'')){oldDvor.title='Двор.Дети';if(oldDvor.description==='Сайт проекта «Двор детям».')oldDvor.description='Сайт проекта «Двор.Дети».';}if(!data.catalogV3){for(const x of supplementary){if(!data.projects.some(p=>p.id===x.id))data.projects.push({...x,coverFit:'contain',coverPresentation:'clean',posX:50,posY:50,zoom:100})}data.catalogV3=true;}return {data,etag:blob.etag||null};}catch(e){if(e?.status===404||e?.code==='not_found'||/not found/i.test(String(e.message)))return {data:null,etag:null};throw e}}
 export async function save(data,etag){const opts={access:'private',contentType:'application/json',allowOverwrite:true};if(etag)opts.ifMatch=etag;return put(PATH,JSON.stringify(data),opts)}
 export function secret(){return process.env.OOOPS_SESSION_SECRET||''}
 function hash(pwd,salt){return scryptSync(pwd,salt,64).toString('hex')}
@@ -48,7 +49,8 @@ function safeProject(x,existing){
  const id=existing?.id||randomBytes(8).toString('hex');
  const urls=(Array.isArray(x.images)?x.images:[]).slice(0,40).map(im=>({id:str(im.id,100)||randomBytes(8).toString('hex'),url:str(im.url,1000),caption:str(im.caption,140)})).filter(im=>/^(\/assets\/cases\/|https:\/\/raw\.githubusercontent\.com\/ulko31\/sofe\/main\/images\/|media\/)/.test(im.url));
  const cover=str(x.cover,1000);
- return {id,title:str(x.title,100)||'Без названия',category:str(x.category,90),description:str(x.description,600),details:str(x.details,5000),color:/^#[0-9a-f]{6}$/i.test(x.color)?x.color:'#d7adff',cover:urls.some(i=>i.url===cover)?cover:(urls[0]?.url||''),images:urls,posX:Math.max(0,Math.min(100,Number(x.posX)||50)),posY:Math.max(0,Math.min(100,Number(x.posY)||50)),zoom:Math.max(60,Math.min(200,Number(x.zoom)||100)),coverFit:x.coverFit==='cover'?'cover':'contain',coverPresentation:x.coverPresentation==='framed'?'framed':'clean',published:existing?.published??false};
+ return {id,title:str(x.title,100)||'Без названия',category:str(x.category,90),description:str(x.description,600),details:str(x.details,5000),color:/^#[0-9a-f]{6}$/i.test(x.color)?x.color:'#d7adff',cover:urls.some(i=>i.url===cover)?cover:(urls[0]?.url||''),images:urls,posX:Math.max(0,Math.min(100,Number(x.posX)||50)),posY:Math.max(0,Math.min(100,Number(x.posY)||50)),zoom:Math.max(60,Math.min(200,Number(x.zoom)||100)),coverFit:x.coverFit==='cover'?'cover':'contain',coverPresentation:x.coverPresentation==='framed'?'framed':'clean',
+story:{headline:str(x.story?.headline,240),challenge:str(x.story?.challenge,2200),approach:str(x.story?.approach,3000),impact:str(x.story?.impact,2200),insight:str(x.story?.insight,800),deliverables:(Array.isArray(x.story?.deliverables)?x.story.deliverables:[]).slice(0,10).map(v=>str(v,180)).filter(Boolean),kind:str(x.story?.kind,120),label:str(x.story?.label,120),demo:['sofe','tutor','dvor'].includes(x.story?.demo)?x.story.demo:''},published:existing?.published??false};
 }
 function log(d,user,action){d.events.unshift({action,by:user.email,at:new Date().toISOString()});d.events=d.events.slice(0,150)}
 export default async function handler(req,res){
