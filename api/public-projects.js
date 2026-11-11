@@ -9,7 +9,7 @@ export default async function handler(req,res){
  const projects=data.projects.filter(p=>p.published).map(p=>{
   const {id,title,category,description,details,color,cover,images,posX,posY,zoom,coverFit,coverPresentation}=p;
   const fallback=stories[id]||{};
-  const story={...fallback,...Object.fromEntries(Object.entries(p.story||{}).filter(([k,v])=>Array.isArray(v)?v.length:typeof v==='string'&&v.trim()))};
+  const story={...fallback,...(p.story||{})};
   return {id,title,category,description,details,color,cover,images,posX,posY,zoom,coverFit:coverFit||'contain',coverPresentation:coverPresentation==='framed'?'framed':'clean',story};
  });
  return res.status(200).json({configured:true,projects});
