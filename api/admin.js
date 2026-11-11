@@ -29,7 +29,7 @@ footerText:'Сайты / Продукты / Дизайн / Контент'
 Object.assign(defaultSite,additionalSiteDefaults);
 const defaults=()=>({version:2,users:[],projects:bootstrap,leads:[],teamProfiles:defaultTeam,siteContent:defaultSite,settings:{telegramNotify:true,aiEnabled:true},events:[]});
 const publicTeam=d=>(d.teamProfiles||defaultTeam).filter(x=>x.visible).map(x=>({id:x.id,name:x.name,role:x.role,duties:x.duties,photo:x.photo,posX:x.posX,posY:x.posY,zoom:x.zoom}));
-const publicSite=d=>{const content={...defaultSite,...(d.siteContent||{})};if(content.contactEmail==='uly.kozmenko@gmail.com')content.contactEmail='ooopsagency@outlook.com';return content;};
+const publicSite=d=>{const content={...defaultSite,...(d.siteContent||{})};if(content.contactEmail==='uly.kozmenko@gmail.com')content.contactEmail='ooopsagency@outlook.com';if(content.seoDescription==='OOOPS! — digital product & creative studio. Проектируем цифровые продукты, создаём бренды, сайты и контент.')content.seoDescription=defaultSite.seoDescription;return content;};
 export {publicTeam,publicSite};
 
 export async function load(){try{const blob=await get(PATH,{access:'private'});if(!blob)return {data:null,etag:null};const data=JSON.parse(await new Response(blob.stream).text());const oldDvor=data.projects?.find(p=>p.id==='dvor');if(oldDvor&&/^Двор детям$/i.test(oldDvor.title||'')){oldDvor.title='Двор.Дети';if(oldDvor.description==='Сайт проекта «Двор детям».')oldDvor.description='Сайт проекта «Двор.Дети».';}return {data,etag:blob.etag||null};}catch(e){if(e?.status===404||e?.code==='not_found'||/not found/i.test(String(e.message)))return {data:null,etag:null};throw e}}
