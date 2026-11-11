@@ -1,2 +1,17 @@
 import {load} from './admin.js';
-export default async function handler(req,res){res.setHeader('Cache-Control','public, max-age=0, s-maxage=30');if(req.method!=='GET')return res.status(405).end();try{const {data}=await load();if(!data)return res.status(200).json({projects:[],configured:false});return res.status(200).json({configured:true,projects:data.projects.filter(p=>p.published).map(({id,title,category,description,details,color,cover,images,posX,posY,zoom,coverFit,coverPresentation})=>({id,title,category,description,details,color,cover,images,posX,posY,zoom,coverFit:coverFit||'contain',coverPresentation:coverPresentation==='framed'?'framed':'clean'}))})}catch{return res.status(503).json({error:'Content temporarily unavailable'})}}
+import {stories} from './case-stories.js';
+export default async function handler(req,res){
+ res.setHeader('Cache-Control','no-store');
+ if(req.method!=='GET')return res.status(405).end();
+ try{
+ const {data}=await load();
+ if(!data)return res.status(200).json({projects:[],configured:false});
+ const projects=data.projects.filter(p=>p.published).map(p=>{
+  const {id,title,category,description,details,color,cover,images,posX,posY,zoom,coverFit,coverPresentation}=p;
+  const fallback=stories[id]||{};
+  const story={...fallback,...Object.fromEntries(Object.entries(p.story||{}).filter(([k,v])=>Array.isArray(v)?v.length:typeof v==='string'&&v.trim()))};
+  return {id,title,category,description,details,color,cover,images,posX,posY,zoom,coverFit:coverFit||'contain',coverPresentation:coverPresentation==='framed'?'framed':'clean',story};
+ });
+ return res.status(200).json({configured:true,projects});
+ }catch(e){console.error('Public projects:',e.message);return res.status(503).json({error:'Content temporarily unavailable'})}
+}
