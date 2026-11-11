@@ -11,7 +11,10 @@ export default async function handler(req,res){
  let stored=false,shouldNotify=true;try{const {data,etag}=await load();if(data?.settings?.telegramNotify===false)shouldNotify=false;if(data){data.leads.unshift(lead);data.leads=data.leads.slice(0,2000);await save(data,etag);stored=true}}catch(e){console.error('OOOPS lead save:',e.message)}
  const text=['🔔 Новая заявка — OOOPS','', 'Имя: '+lead.name,'Контакт: '+lead.phone,lead.company?'Компания: '+lead.company:null,lead.service?'Услуга: '+lead.service:null,lead.msg?'Сообщение: '+lead.msg:null].filter(Boolean).join('\n');
  const TG_TOKEN=process.env.TELEGRAM_BOT_TOKEN,TG_CHAT=process.env.TELEGRAM_CHAT_ID;
- let notified=false;if(shouldNotify&&TG_TOKEN&&TG_CHAT){try{const response=await fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:TG_CHAT,text})});notified=response.ok;if(!response.ok)console.error('OOOPS notification HTTP',response.status)}catch(e){console.error('OOOPS notify:',e.message)}}
+ const thread=Number(process.env.TELEGRAM_MESSAGE_THREAD_ID);
+ const telegramPayload={chat_id:TG_CHAT,text};
+ if(Number.isSafeInteger(thread)&&thread>0)telegramPayload.message_thread_id=thread;
+ let notified=false;if(shouldNotify&&TG_TOKEN&&TG_CHAT){try{const response=await fetch('https://api.telegram.org/bot'+TG_TOKEN+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(telegramPayload)});notified=response.ok;if(!response.ok)console.error('OOOPS notification HTTP',response.status)}catch(e){console.error('OOOPS notify:',e.message)}}
  if(!stored&&!notified)return res.status(503).json({error:'Не удалось доставить заявку'});
  return res.status(200).json({ok:true,id:lead.id,stored,notified});
 }
