@@ -578,7 +578,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       const card=document.createElement('a');card.href=route;card.className='other-folder-card';
       card.style.setProperty('--folder-bg',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#ddd5ef');
       card.style.setProperty('--tilt',((i%5)-2)*1.8+'deg');
-      const pdf=typeof st.sourcePdf==='string'&&/^\\/assets\\/portfolio\\/[\\w-]+\\.pdf$/.test(st.sourcePdf)?st.sourcePdf:'';
+      const pdf=typeof st.sourcePdf==='string'&&st.sourcePdf.startsWith('/assets/portfolio/')&&st.sourcePdf.endsWith('.pdf')?st.sourcePdf:'';
       let display=pdf?'<iframe title="Оригинальный дизайн '+esc(p.title)+'" loading="lazy" tabindex="-1" src="'+esc(pdf)+'#view=FitH&toolbar=0&navpanes=0"></iframe>':(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'<div class="other-typographic">'+esc(p.title)+'</div>');
       card.innerHTML='<div class="other-card-picture">'+display+'</div><div class="other-card-copy"><small>'+esc(p.category||'Дизайн')+'</small><strong>'+esc(p.title)+'</strong><span>Открыть работу ↗</span></div>';
       return card;
