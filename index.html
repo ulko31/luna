@@ -552,48 +552,109 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
     const response=await fetch('/api/public-projects',{cache:'no-store'});if(!response.ok)throw Error('Проекты временно недоступны');
     const result=await response.json();if(!result.configured)throw Error('Сайт ещё не настроен');
     root.replaceChildren();
-    let archiveHeadingShown=false;
-    result.projects.forEach((p,i)=>{
-      const article=document.createElement('article');
-      const st=p.story||{};
-      const archived=(st.label||'').toLowerCase().includes('портфолио')||(st.kind||'').toLowerCase().includes('архив');
-      if(archived&&!archiveHeadingShown){const heading=document.createElement('div');heading.className='ooops-archive-heading';heading.innerHTML='<span>OOOPS / DESIGN ARCHIVE</span><h3>Архив дизайна</h3><p>Концепции и работы из дизайн-портфолио участников команды. Не все проекты запускались как публичные сайты.</p>';root.appendChild(heading);archiveHeadingShown=true;}
-      article.className='project ooops-case-card'+(archived?' is-archive':'');
-      article.style.setProperty('--case-accent',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#d9bafa');
+    const important=['sofe','tutor','dvor','calendar'];
+    const featured=important.map(id=>result.projects.find(p=>p.id===id)).filter(Boolean);
+    const other=result.projects.filter(p=>!important.includes(p.id)&&p.id!=='starostin');
+    const coverImage=p=>p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+' — материалы проекта">':'';
+    featured.forEach((p,i)=>{
+      const article=document.createElement('article'),st=p.story||{};
+      article.className='project ooops-case-card';
+      article.style.setProperty('--layer',i);
+      article.style.setProperty('--stack',i);
+      article.style.setProperty('--case-accent',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#d8bafa');
       const route='/portfolio/'+encodeURIComponent(p.id);
-      const visual=p.cover&&!archived?'<div class="case-shot"><div class="case-shot-toolbar"><i></i><i></i><i></i><span>OOOPS / PROJECT VIEW</span></div><img loading="lazy" src="'+esc(media(p.cover))+'" alt="Материалы проекта '+esc(p.title)+'"></div>':'<div class="case-type-cover"><span>OOOPS! / '+esc(archived?'DESIGN ARCHIVE':'DIGITAL PRODUCT')+'</span><strong>'+esc(p.title)+'</strong><small>VIEW THE STORY ↗</small></div>';
-      article.innerHTML='<div class="project-copy"><span class="project-id">'+esc(st.label||p.category)+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(st.headline||p.description)+'</p><a class="case-link" href="'+route+'">Смотреть проект <span aria-hidden="true">↗</span></a></div><div class="project-art">'+visual+'</div>';
-      const img=article.querySelector('img');if(img){img.style.setProperty('object-position',(Number(p.posX)||50)+'% '+(Number(p.posY)||50)+'%');img.style.setProperty('object-fit',p.coverFit==='cover'?'cover':'contain')}
+      let visual='';
+      if(p.id==='tutor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>TIME LAB / DIGITAL CLASSROOM</span></div><iframe title="Превью приложения Time Lab" loading="lazy" src="/case-demo.html?product=tutor" tabindex="-1"></iframe></div>';
+      else if(p.id==='calendar')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>CALENDAR / WEB APPLICATION</span></div><iframe title="Превью календаря" loading="lazy" src="https://just-calendar-livid.vercel.app/" tabindex="-1"></iframe></div>';
+      else if(p.id==='dvor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>ДВОР.ДЕТИ / WEB</span></div><div class="case-real-preview">'+coverImage(p)+'</div></div>';
+      else visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>SOFE / PRODUCT PREVIEW</span></div><div class="case-real-preview">'+coverImage(p)+'</div></div>';
+      article.innerHTML='<div class="project-copy"><span class="project-id">0'+(i+1)+' / '+esc(p.category||'Проект')+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(st.headline||p.description)+'</p><a class="case-link" href="'+route+'">Смотреть проект <span aria-hidden="true">↗</span></a></div><div class="project-art">'+visual+'<a class="case-image-link" href="'+route+'" aria-label="Открыть проект '+esc(p.title)+'"></a></div>';
       root.appendChild(article);
     });
+    document.querySelector('#otherWorkSection')?.remove();
+    const section=document.createElement('section');section.id='otherWorkSection';section.className='ooops-other-wrap';
+    const createCard=(p,i)=>{
+      const st=p.story||{},route='/portfolio/'+encodeURIComponent(p.id);
+      const card=document.createElement('a');card.href=route;card.className='other-folder-card';
+      card.style.setProperty('--folder-bg',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#ddd5ef');
+      card.style.setProperty('--tilt',((i%5)-2)*1.8+'deg');
+      const pdf=typeof st.sourcePdf==='string'&&/^\\/assets\\/portfolio\\/[\\w-]+\\.pdf$/.test(st.sourcePdf)?st.sourcePdf:'';
+      let display=pdf?'<iframe title="Оригинальный дизайн '+esc(p.title)+'" loading="lazy" tabindex="-1" src="'+esc(pdf)+'#view=FitH&toolbar=0&navpanes=0"></iframe>':(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'<div class="other-typographic">'+esc(p.title)+'</div>');
+      card.innerHTML='<div class="other-card-picture">'+display+'</div><div class="other-card-copy"><small>'+esc(p.category||'Дизайн')+'</small><strong>'+esc(p.title)+'</strong><span>Открыть работу ↗</span></div>';
+      return card;
+    };
+    section.innerHTML='<div class="other-folder-head"><div><span class="folder-eyebrow">OOOPS! / MORE WORK</span><h3>Другие работы <span>✳</span></h3><p>Сайты, визуальные концепции и графические проекты. Листайте карточки и открывайте интересные работы.</p></div><div class="folder-buttons"><button type="button" class="folder-back" aria-label="Предыдущие работы">←</button><button type="button" class="folder-next" aria-label="Следующие работы">→</button></div></div><div class="other-folder-window"><div class="other-folder-track"></div></div><a class="view-all-projects" href="/work.html">Посмотреть все работы <span aria-hidden="true">↗</span></a>';
+    const track=section.querySelector('.other-folder-track');other.forEach((p,i)=>track.appendChild(createCard(p,i)));
+    root.insertAdjacentElement('afterend',section);
+    section.querySelector('.folder-back').onclick=()=>track.scrollBy({left:-350,behavior:'smooth'});
+    section.querySelector('.folder-next').onclick=()=>track.scrollBy({left:350,behavior:'smooth'});
   }catch(err){console.warn('OOOPS portfolio CMS temporarily unavailable',err);root.innerHTML='<p role="status" style="padding:26px;background:#fff;border:1px solid #ddd;border-radius:12px">Кейсы временно не загрузились. <a href="" onclick="location.reload();return false">Обновить страницу</a></p>'}
 })();
 </script>
 
 
 <style>
-/* 2026 portfolio system: consistent editorial cards; all items source from public CMS. */
-#work .projects{display:flex!important;flex-direction:column!important;gap:23px!important}
-#work .ooops-archive-heading{padding:50px 0 15px;color:#191919}#work .ooops-archive-heading span{font-size:11px;letter-spacing:.15em;font-weight:800;color:#8424ea}#work .ooops-archive-heading h3{font-size:clamp(39px,6vw,74px);line-height:1;letter-spacing:-.07em;margin:18px 0}#work .ooops-archive-heading p{max-width:670px;font-size:16px;line-height:1.65;color:#68636a}
+/* Restored OOOPS layered scroll-stack; compact folder for more work */
+#work .projects{display:flex!important;flex-direction:column!important;gap:26px!important;padding-bottom:46px!important;position:relative}
 #work .projects .ooops-case-card,
-#work .projects .ooops-case-card:nth-child(n){position:relative!important;top:auto!important;transform:none!important;height:auto!important;min-height:470px!important;display:grid!important;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;gap:0!important;background:#fbfaf7!important;color:#191919!important;border:1px solid #d9d6d0!important;border-radius:14px!important;overflow:hidden!important;box-shadow:none!important}
-#work .ooops-case-card .project-copy{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:22px!important;padding:clamp(25px,4vw,55px)!important;color:#191919!important}
-#work .ooops-case-card .project-copy h3{font-size:clamp(38px,5vw,73px)!important;line-height:1.02!important;letter-spacing:-.07em!important;margin:0!important}
-#work .ooops-case-card .project-copy h3 a{color:inherit!important;text-decoration:none!important}
-#work .ooops-case-card .project-copy p{font-size:clamp(15px,1.5vw,18px)!important;line-height:1.55!important;max-width:440px!important;margin:0!important;color:#565054!important}
-#work .ooops-case-card .project-id{display:inline-flex!important;background:#fff!important;border:1px solid #ddd8cf!important;border-radius:90px!important;font-size:11px!important;color:#4b4348!important;padding:10px 13px!important;text-transform:none!important;letter-spacing:.04em!important}
-#work .ooops-case-card .case-link{font-size:14px!important;font-weight:750!important;display:inline-flex!important;border:0!important;border-bottom:1px solid #111!important;padding:0 0 8px!important;color:#191919!important;background:transparent!important;border-radius:0!important;text-decoration:none!important}
-#work .ooops-case-card .project-art{min-width:0!important;display:flex!important;align-items:stretch!important;justify-content:stretch!important;background:var(--case-accent,#d9bafa)!important;padding:clamp(14px,3vw,36px)!important}
-#work .ooops-case-card .case-shot{min-width:0;width:100%;background:#fff;border-radius:11px;display:flex;flex-direction:column;box-shadow:0 18px 35px #0002;overflow:hidden;align-self:center}
-#work .ooops-case-card .case-shot-toolbar{display:flex;align-items:center;gap:5px;padding:11px 14px;border-bottom:1px solid #eee}
-#work .ooops-case-card .case-shot-toolbar i{width:7px;height:7px;border-radius:50%;background:#d8d3d7}
-#work .ooops-case-card .case-shot-toolbar span{margin-left:auto;font-size:9px;letter-spacing:.1em;color:#777}
-#work .ooops-case-card .case-shot img{display:block;max-height:400px;height:auto;width:100%;object-fit:contain!important;object-position:center!important;transform:none!important}
-#work .ooops-case-card .case-type-cover{min-height:380px;width:100%;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:clamp(22px,3vw,43px);border:1px solid #0002;border-radius:10px;color:#191919;background:#fff5;gap:18px}
-#work .ooops-case-card .case-type-cover span,#work .ooops-case-card .case-type-cover small{font-size:11px;font-weight:750;letter-spacing:.12em}
-#work .ooops-case-card .case-type-cover strong{font-family:Manrope,sans-serif;font-size:clamp(38px,5vw,79px);letter-spacing:-.08em;line-height:1.04;overflow-wrap:anywhere}
-#work .ooops-case-card.is-archive .project-art{background:#ede8e2!important}
-@media(max-width:760px){#work .projects .ooops-case-card,#work .projects .ooops-case-card:nth-child(n){grid-template-columns:1fr!important;min-height:0!important}#work .ooops-case-card .project-copy{padding:25px!important;gap:15px!important}#work .ooops-case-card .project-art{min-height:280px!important;padding:15px!important}#work .ooops-case-card .case-shot img{max-height:300px}#work .ooops-case-card .case-type-cover{min-height:270px}}
+#work .projects .ooops-case-card:nth-child(n){
+ position:sticky!important;top:calc(88px + var(--stack,0)*12px)!important;z-index:calc(35 + var(--layer,0))!important;
+ transform:none!important;display:grid!important;grid-template-columns:minmax(0,.84fr) minmax(0,1.16fr)!important;
+ min-height:545px!important;height:min(73vh,665px)!important;max-height:none!important;
+ background:var(--case-accent,#d8bafa)!important;color:#191919!important;
+ border:1px solid #24212422!important;border-radius:15px!important;
+ overflow:hidden!important;box-shadow:0 22px 56px #251c292e!important;
+}
+#work .ooops-case-card .project-copy{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:clamp(14px,2.8vw,30px)!important;padding:clamp(28px,4.5vw,62px)!important;min-width:0!important}
+#work .ooops-case-card .project-id{border:1px solid #1c1a1c70!important;border-radius:50px!important;padding:10px 14px!important;font-size:11px!important;line-height:1.5!important;color:#242124!important;background:transparent!important;letter-spacing:.06em!important}
+#work .ooops-case-card .project-copy h3{font-size:clamp(43px,6.2vw,92px)!important;line-height:.99!important;letter-spacing:-.08em!important;margin:0!important;text-wrap:balance!important}
+#work .ooops-case-card .project-copy h3 a{font:inherit!important;line-height:inherit!important;color:#171519!important;text-decoration:none!important}
+#work .ooops-case-card .project-copy p{font-size:clamp(15px,1.55vw,19px)!important;line-height:1.5!important;max-width:390px!important;margin:0!important;color:#292329!important}
+#work .ooops-case-card .case-link{font-size:13px!important;font-weight:800!important;text-decoration:none!important;border-bottom:2px solid #1e1a1b!important;padding-bottom:8px!important;color:#181618!important;background:transparent!important}
+#work .ooops-case-card .project-art{background:transparent!important;display:flex!important;align-items:center!important;justify-content:center!important;position:relative!important;min-height:0!important;height:100%!important;padding:clamp(20px,3vw,42px)!important;overflow:hidden}
+#work .ooops-case-card .case-portal{width:100%;height:100%;max-height:530px;min-height:290px;border:1px solid #1e1e1e40;border-radius:15px;overflow:hidden;box-shadow:0 24px 44px #19131e2a;display:flex;flex-direction:column;background:#fff;}
+#work .ooops-case-card .case-chrome{display:flex;gap:6px;align-items:center;padding:13px 16px;border-bottom:1px solid #ddd;background:#f9f8f6}
+#work .ooops-case-card .case-chrome i{width:8px;height:8px;border-radius:50%;background:#bdb5bf}
+#work .ooops-case-card .case-chrome span{font-size:9px;font-weight:800;letter-spacing:.11em;margin-left:auto;color:#5e565d}
+#work .ooops-case-card .case-real-preview{height:100%;width:100%;min-height:0;background:#fff;display:flex;justify-content:center;align-items:center;padding:14px}
+#work .ooops-case-card .case-real-preview img{max-width:100%!important;max-height:100%!important;width:auto!important;height:auto!important;object-fit:contain!important;object-position:center!important;transform:none!important}
+#work .ooops-case-card .case-portal iframe{width:100%;height:100%;border:0;flex:1;pointer-events:none;background:#fff}
+#work .ooops-case-card .case-image-link{position:absolute;inset:0;z-index:2}
+#work .ooops-case-card:focus-within{outline:3px solid #191919;outline-offset:3px}
+#work .ooops-other-wrap{margin:30px 0 20px;padding:27px 0 18px;border-top:1px solid #bdb8b0}
+#work .other-folder-head{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:16px 0 28px}
+#work .folder-eyebrow{font-size:10px;letter-spacing:.16em;font-weight:900;color:#6920a9}
+#work .other-folder-head h3{font:800 clamp(33px,5vw,60px)/1 Manrope;margin:12px 0;letter-spacing:-.075em}
+#work .other-folder-head h3 span{color:#8224e4}
+#work .other-folder-head p{max-width:550px;font-size:14px;line-height:1.65;color:#5e555e;margin:0}
+#work .folder-buttons{display:flex;gap:8px}
+#work .folder-buttons button{border:1px solid #c5bfb8;border-radius:50%;width:46px;height:46px;background:#fff;cursor:pointer;font-size:19px}
+#work .folder-buttons button:hover{background:#d8fb48}
+#work .other-folder-window{width:100%;overflow:hidden;padding:24px 0 33px}
+#work .other-folder-track{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:thin;gap:0;padding:14px 18px 35px;overscroll-behavior-x:contain}
+#work .other-folder-card{display:flex;flex-direction:column;flex:0 0 clamp(220px,25vw,325px);height:395px;margin-right:-19px;padding:12px;border:1px solid #17171733;border-radius:11px;background:var(--folder-bg,#e0d0ef);text-decoration:none;box-shadow:0 13px 22px #0002;transform:rotate(var(--tilt,0deg));transition:transform .25s,margin .25s,box-shadow .25s;position:relative;scroll-snap-align:start;overflow:hidden}
+#work .other-folder-card:hover,#work .other-folder-card:focus-visible{transform:rotate(0deg) translateY(-13px) scale(1.03);z-index:3;margin-right:10px;box-shadow:0 24px 35px #0003}
+#work .other-folder-card .other-card-picture{background:#fff9;min-height:0;flex:1;overflow:hidden;border-radius:6px;display:flex;align-items:center;justify-content:center;pointer-events:none}
+#work .other-card-picture img{max-height:100%;max-width:100%;object-fit:contain}
+#work .other-card-picture iframe{width:100%;height:100%;border:0;pointer-events:none;background:#fff}
+#work .other-typographic{font:800 38px/.99 Manrope;padding:24px;letter-spacing:-.08em;overflow-wrap:anywhere}
+#work .other-card-copy{display:flex;flex-direction:column;gap:7px;padding:16px 9px 8px;min-height:111px}
+#work .other-card-copy small{font-size:10px;letter-spacing:.04em}
+#work .other-card-copy strong{font:800 22px/1.04 Manrope;letter-spacing:-.045em}
+#work .other-card-copy span{font-size:11px;font-weight:700;margin-top:auto}
+#work .view-all-projects{display:inline-block;padding:14px 20px;border-radius:8px;background:#1c1a1d;color:#fff;text-decoration:none;font-size:13px;font-weight:700}
+@media(max-width:780px){
+ #work .projects .ooops-case-card,#work .projects .ooops-case-card:nth-child(n){top:calc(70px + var(--stack,0)*8px)!important;min-height:490px!important;height:min(78svh,650px)!important;grid-template-columns:1fr!important;grid-template-rows:auto 1fr!important}
+ #work .ooops-case-card .project-copy{padding:22px 24px 11px!important;gap:11px!important;justify-content:flex-start!important}
+ #work .ooops-case-card .project-copy h3{font-size:clamp(38px,9vw,55px)!important}
+ #work .ooops-case-card .project-copy p{font-size:13px!important;line-height:1.35!important}
+ #work .ooops-case-card .project-art{height:auto!important;min-height:0!important;flex:1!important;padding:10px 20px 20px!important}
+ #work .ooops-case-card .case-portal{min-height:180px!important;height:100%!important}
+ #work .ooops-other-wrap{padding-top:25px}
+ #work .other-folder-card{height:340px;flex-basis:230px}
+ #work .other-folder-head{align-items:start}
+}
+@media(prefers-reduced-motion:reduce){#work .other-folder-card{transition:none!important}}
 </style>
 <style>
 /* Published team image editing remains faithful to the site's original portrait treatment. */
