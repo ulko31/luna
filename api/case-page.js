@@ -1,22 +1,83 @@
 import {load} from './admin.js';
+import {stories} from './case-stories.js';
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const asMedia=u=>typeof u==='string'&&u.startsWith('media/')?'/api/media?key='+encodeURIComponent(u):u;
 const safeImg=u=>{const s=asMedia(u);return typeof s==='string'&&(/^(\/assets\/|\/api\/media\?key=|https:\/\/raw\.githubusercontent\.com\/ulko31\/sofe\/main\/images\/)/.test(s))?s:''};
-const css=`:root{font-family:Manrope,Arial,sans-serif;color:#1c1b1b;background:#f5f3ef}*{box-sizing:border-box}body{margin:0}a{color:inherit}nav{position:sticky;top:0;z-index:10;background:#fffffff2;padding:17px clamp(18px,5vw,75px);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ddd}nav .brand{font-size:26px;font-weight:900;letter-spacing:-.1em;text-decoration:none}nav .brand span{color:#8527ed}nav a:not(.brand){font-size:13px;font-weight:700}main{max-width:1380px;margin:auto;padding:55px clamp(18px,5vw,75px) 110px}.eyebrow{font-size:12px;text-transform:uppercase;letter-spacing:.15em;font-weight:800}h1{font-size:clamp(53px,10vw,140px);font-weight:900;letter-spacing:-.09em;line-height:.91;margin:25px 0 30px;overflow-wrap:anywhere}.description{font-size:clamp(17px,2vw,24px);line-height:1.5;max-width:740px}.details{max-width:800px;white-space:pre-line;font-size:16px;line-height:1.8;margin:50px 0}.cover{background:#e5dbed;border-radius:10px;overflow:hidden;margin:50px 0}.cover img{display:block;width:100%;max-height:720px;object-fit:var(--fit,contain);object-position:var(--x,50%) var(--y,50%);transform:scale(var(--z,1));transform-origin:var(--x,50%) var(--y,50%)}.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}.gallery figure{margin:0;background:#ece8e2;padding:12px;border-radius:8px}.gallery img{width:100%;max-height:660px;object-fit:contain;display:block}.gallery figcaption{font-size:12px;margin:10px 0 4px;color:#666}.bottom{margin-top:80px;padding-top:30px;border-top:1px solid #ccc;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}.button{background:#1c1c1c;color:white;text-decoration:none;padding:14px 20px;border-radius:7px;font-weight:700;font-size:13px}a.button:hover{background:#8527ed}.other{margin-top:54px;line-height:2}#error{font-size:16px}@media(max-width:650px){main{padding-top:35px}.gallery{grid-template-columns:1fr}h1{margin-bottom:18px}.cover{margin:30px 0}}`;
+const style=`
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{font-family:'DM Sans',Arial,sans-serif;color:#1c1a1d;background:#f5f3ef;--purple:#8527ed;--ink:#1c1a1d;--line:#d9d5cf}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0}button{font:inherit}a{color:inherit}
+nav{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:21px clamp(20px,5vw,78px);border-bottom:1px solid var(--line);background:#f5f3efe8;position:sticky;top:0;z-index:10;backdrop-filter:blur(18px)}
+.brand{font-family:Manrope,sans-serif;font-size:28px;font-weight:900;text-decoration:none;letter-spacing:-.1em}.brand em{color:var(--purple);font-style:normal}
+.navlinks{display:flex;gap:24px;align-items:center}.navlinks a{text-decoration:none;font-size:13px;font-weight:700}.navlinks a:hover{color:var(--purple)}
+.wrap{max-width:1400px;padding-left:clamp(20px,5vw,78px);padding-right:clamp(20px,5vw,78px);margin:auto}
+.overline{font-size:11px;font-weight:800;letter-spacing:.15em;text-transform:uppercase}.muted{color:#6b676b}
+.hero{padding-top:clamp(56px,8vw,120px);padding-bottom:65px}.hero-top{display:flex;flex-wrap:wrap;align-items:center;gap:13px}.pill{border:1px solid #c9c4bf;border-radius:40px;padding:9px 14px;font-size:11px;font-weight:700}
+h1{font-family:Manrope,Arial,sans-serif;font-size:clamp(54px,9vw,126px);line-height:.98;letter-spacing:-.09em;margin:24px 0 28px;overflow-wrap:anywhere}
+.hero-description{font-size:clamp(20px,3vw,37px);line-height:1.32;max-width:1050px;letter-spacing:-.035em}.hero-footer{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-top:52px}
+.big-visual{background:var(--caseColor,#d5c4fa);border-radius:16px;min-height:clamp(280px,44vw,570px);overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;padding:clamp(22px,5vw,65px)}
+.big-visual img{max-width:100%;width:auto;max-height:540px;object-fit:contain;object-position:center;box-shadow:0 17px 38px #0002;border-radius:8px}
+.big-visual .type-cover{font-family:Manrope,Arial,sans-serif;font-size:clamp(46px,8vw,110px);letter-spacing:-.09em;line-height:1;font-weight:900;text-align:center;max-width:900px;overflow-wrap:anywhere}
+.big-visual .corner{position:absolute;bottom:22px;left:26px;font-size:12px;font-weight:700}
+.index-row{display:flex;flex-wrap:wrap;gap:14px;margin:0;padding:24px 0;list-style:none}.index-row a{text-decoration:none;border-bottom:1px solid transparent;font-size:12px;font-weight:700}.index-row a:hover{border-color:var(--ink)}
+.section{padding-top:clamp(68px,8vw,125px);padding-bottom:clamp(68px,8vw,125px);border-bottom:1px solid var(--line)}
+.cols{display:grid;grid-template-columns:minmax(160px,.38fr) minmax(0,1fr);gap:clamp(24px,5vw,95px)}
+h2{font-family:Manrope,Arial,sans-serif;font-size:clamp(34px,5.5vw,71px);letter-spacing:-.07em;line-height:1.07;margin:0 0 24px}h3{font-family:Manrope,Arial,sans-serif;letter-spacing:-.04em}
+.bodycopy{max-width:830px;font-size:clamp(17px,2.1vw,23px);line-height:1.65;white-space:pre-line;margin:0}
+.deliverables{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;list-style:none;padding:0;margin:24px 0 0}
+.deliverables li{background:#fff;border-radius:11px;padding:25px;font-size:17px;font-weight:650;min-height:116px;display:flex;align-items:flex-end}
+.deliverables li:before{content:'↗';display:block;align-self:flex-start;margin-right:15px;color:var(--purple)}
+.impact{background:#d9fb48;padding:clamp(33px,6vw,80px);border-radius:17px}.impact h2{max-width:800px}.insight{margin-top:35px;padding-top:24px;border-top:1px solid #9996;display:flex;gap:15px;align-items:baseline}
+.preview{background:#f0eee9;border:1px solid #dedbd5;border-radius:18px;overflow:hidden;padding:18px}
+.previewbar{display:flex;align-items:center;gap:7px;padding:9px 12px 17px;font-size:12px;color:#645e62}.dot{width:8px;height:8px;background:#c9c5c3;border-radius:50%}.previewbar strong{margin-left:auto;font-size:11px;font-weight:700}
+.preview iframe{width:100%;height:635px;border:1px solid #ddd9d2;border-radius:12px;background:white;display:block}
+.preview-note{font-size:13px;line-height:1.5;color:#666;margin:15px 3px 0}
+.gallery-stage{display:flex;flex-direction:column;gap:16px}.gallery-display{display:flex;align-items:center;justify-content:center;border:1px solid #e3ded7;border-radius:14px;background:#e9e5df;overflow:hidden;min-height:clamp(230px,40vw,560px);padding:15px}
+.gallery-display img{max-width:100%;max-height:550px;object-fit:contain;display:block}
+.gallery-bar{display:flex;align-items:center;justify-content:space-between;gap:18px}
+.arrow{border:1px solid #bbb5ae;background:#fff;border-radius:40px;padding:12px 19px;cursor:pointer;font-weight:750}.arrow:hover{background:#d9fb48}.counter{font-size:13px;color:#6f6b65}
+.end{padding-top:100px;padding-bottom:105px}.end h2{font-size:clamp(42px,7vw,90px)}.button{display:inline-flex;gap:12px;background:var(--ink);color:white;padding:16px 25px;text-decoration:none;border-radius:8px;font-weight:750}.button:hover{background:var(--purple)}
+footer{border-top:1px solid var(--line);padding:30px clamp(20px,5vw,78px);font-size:12px;color:#777}
+@media(max-width:740px){.cols{grid-template-columns:1fr}.deliverables{grid-template-columns:1fr}.deliverables li{min-height:80px}.navlinks{gap:12px}.preview{padding:9px}.preview iframe{height:640px}.hero-footer{margin-top:35px}.section{padding-top:65px;padding-bottom:65px}}
+`;
 export default async function handler(req,res){
- res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');res.setHeader('Content-Type','text/html; charset=utf-8');
+ res.setHeader('Content-Type','text/html; charset=utf-8');res.setHeader('Cache-Control','no-store');
  if(req.method!=='GET')return res.status(405).end();
  const id=String(req.query.id||'').trim();
  if(!/^[a-zA-Z0-9_-]{1,100}$/.test(id))return res.status(404).send('Проект не найден');
- let data;try{({data}=await load())}catch(e){console.error('SEO project load:',e.message);return res.status(503).send('Временно недоступно')}
+ let data;try{({data}=await load())}catch(e){console.error('Case load:',e.message);return res.status(503).send('Временно недоступно')}
  const p=data?.projects?.find(x=>x.id===id&&x.published);
  if(!p)return res.status(404).send('Проект не найден');
+ const built=stories[id]||{};
+ const story={...built,...Object.fromEntries(Object.entries(p.story||{}).filter(([k,v])=>Array.isArray(v)?v.length:typeof v==='string'&&v.trim()))};
+ const headline=story.headline||p.description||'Визуальная история проекта';
+ const challenge=story.challenge||p.details||p.description||'Исходная задача проекта.';
+ const approach=story.approach||p.details||p.description||'Работа с идеей, структурой и визуальным решением.';
+ const outcome=story.impact||'Результат — подготовленный проектный материал; количественные показатели не заявляются.';
+ const deliverables=(Array.isArray(story.deliverables)&&story.deliverables.length?story.deliverables:['Структура проекта','Дизайн и ключевые экраны','Проверка основных сценариев']).slice(0,10);
  const url='https://ooops.agency/portfolio/'+encodeURIComponent(id);
- const name=esc(p.title),title=esc(p.title+' — кейс digital-студии OOOPS'),description=esc(String(p.description||'Проект digital-студии OOOPS').slice(0,160));
+ const title=p.title+' — кейс digital-студии OOOPS';
+ const desc=String(p.description||headline).slice(0,160);
  const cover=safeImg(p.cover);
- const schema=JSON.stringify({'@context':'https://schema.org','@type':'CreativeWork',name:p.title,description:p.description||'',url,creator:{'@type':'Organization',name:'OOOPS',url:'https://ooops.agency/'}}).replace(/</g,'\\u003c');
- const image=(item,caption,cls='')=>{const src=safeImg(item);return src?`<img src="${esc(src)}" alt="${esc(caption||p.title)}" loading="lazy" ${cls}>`:''};
- const pics=(Array.isArray(p.images)?p.images:[]).filter(x=>x.url!==p.cover).map((x,i)=>`<figure>${image(x.url,x.caption||p.title)}<figcaption>${esc(x.caption||'Изображение '+(i+1))}</figcaption></figure>`).join('');
- const frame=cover?`<div class="cover" style="background:${/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#e5dbed'};--x:${Math.max(0,Math.min(100,Number(p.posX)||50))}%;--y:${Math.max(0,Math.min(100,Number(p.posY)||50))}%;--z:${Math.max(.6,Math.min(2,Number(p.zoom||100)/100))};--fit:${p.coverFit==='cover'?'cover':'contain'}">${image(p.cover,p.title)}</div>`:'';
- return res.status(200).send(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f3ef"><meta name="robots" content="index,follow,max-image-preview:large"><title>${title}</title><meta name="description" content="${description}"><link rel="canonical" href="${url}"><meta property="og:type" content="article"><meta property="og:site_name" content="OOOPS"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:url" content="${url}"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><script type="application/ld+json">${schema}</script><style>${css}</style></head><body><nav><a class="brand" href="/">OOO<span>PS!</span></a><a href="/#work">Все проекты</a></nav><main><span class="eyebrow">${esc(p.category||'Проект')}</span><h1>${name}</h1><p class="description">${description}</p>${frame}<div class="details">${esc(p.details||p.description||'')}</div><div class="gallery">${pics}</div><div class="other"><a href="/#work">← Все кейсы OOOPS</a></div><div class="bottom"><span>OOOPS! digital studio</span><a class="button" href="/#contact">Обсудить проект</a></div></main></body></html>`);
+ const images=(Array.isArray(p.images)?p.images:[]).map(x=>({url:safeImg(x.url),caption:x.caption||p.title})).filter(x=>x.url);
+ const schema=JSON.stringify({'@context':'https://schema.org','@type':'CreativeWork',name:p.title,description:desc,url,creator:{'@type':'Organization',name:'OOOPS',url:'https://ooops.agency/'}}).replace(/</g,'\\u003c');
+ const accent=/^#[0-9a-fA-F]{6}$/.test(p.color||'')?p.color:'#d5c4fa';
+ const demo=['sofe','tutor','dvor'].includes(story.demo)?story.demo:'';
+ const gallery=images.length>0?`<section class="wrap section" id="gallery"><div class="cols"><div class="overline">05 / МАТЕРИАЛЫ</div><div><h2>Макеты и детали</h2><p class="muted">Переключайте изображения, чтобы посмотреть материалы проекта в удобном размере.</p><div class="gallery-stage"><div class="gallery-display"><img id="gallery-image" src="${esc(images[0].url)}" alt="${esc(images[0].caption)}"></div><div class="gallery-bar"><button type="button" class="arrow" id="prev-image" aria-label="Предыдущее изображение">← Назад</button><span class="counter" id="gallery-counter">1 / ${images.length}</span><button type="button" class="arrow" id="next-image" aria-label="Следующее изображение">Далее →</button></div></div></div></div></section>`:'';
+ const items=JSON.stringify(images).replace(/</g,'\\u003c');
+ const galleryScript=images.length>0?`<script>const slides=${items};let i=0;const view=document.getElementById('gallery-image'),counter=document.getElementById('gallery-counter');const set=n=>{i=(n+slides.length)%slides.length;view.src=slides[i].url;view.alt=slides[i].caption;counter.textContent=(i+1)+' / '+slides.length};document.getElementById('prev-image').onclick=()=>set(i-1);document.getElementById('next-image').onclick=()=>set(i+1);</script>`:'';
+ const demoHtml=demo?`<section class="wrap section" id="demo"><div class="cols"><div class="overline">04 / ПРОТОТИП</div><div><h2>Попробуйте сценарий</h2><p class="bodycopy" style="font-size:17px;margin-bottom:24px">Кликабельная демонстрация логики и навигации. Можно переключать вкладки и проходить между экранами без регистрации.</p><div class="preview"><div class="previewbar"><i class="dot"></i><i class="dot"></i><i class="dot"></i><strong>OOOPS / INTERACTIVE CONCEPT</strong></div><iframe title="Интерактивный демонстрационный прототип ${esc(p.title)}" src="/case-demo.html?product=${encodeURIComponent(demo)}" loading="lazy" sandbox="allow-scripts"></iframe><p class="preview-note">Это самостоятельный демонстрационный прототип для портфолио, не точная копия работающего продукта. В нём нет реальных пользовательских данных.</p></div></div></div></section>`:'';
+ const coverMarkup=cover?`<img src="${esc(cover)}" alt="Обложка проекта ${esc(p.title)}" loading="eager">`:`<div class="type-cover">${esc(p.title)}</div>`;
+ return res.status(200).send(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f3ef"><meta name="robots" content="index,follow,max-image-preview:large"><title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${url}"><meta property="og:type" content="article"><meta property="og:site_name" content="OOOPS"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><script type="application/ld+json">${schema}</script><style>${style}</style></head><body>
+<nav><a class="brand" href="/">OOO<em>PS!</em></a><div class="navlinks"><a href="/#work">Портфолио</a><a href="/#contact">Обсудить проект ↗</a></div></nav>
+<main>
+<header class="hero wrap"><div class="hero-top"><span class="overline">OOOPS / CASE STUDY</span><span class="pill">${esc(story.kind||p.category||'Проект')}</span><span class="pill">${esc(story.label||'Портфолио')}</span></div><h1>${esc(p.title)}</h1><p class="hero-description">${esc(headline)}</p><div class="hero-footer"><a class="button" href="#challenge">Исследовать кейс ↓</a><span class="muted" style="font-size:12px">Идея · Процесс · Решение · Результат</span></div></header>
+<div class="wrap"><div class="big-visual" style="--caseColor:${accent}">${coverMarkup}<span class="corner">OOOPS! / ${esc(p.title)}</span></div><div class="index-row"><a href="#challenge">01 Задача</a><a href="#approach">02 Подход</a><a href="#solution">03 Что сделали</a>${demo?'<a href="#demo">04 Демо</a>':''}${images.length?'<a href="#gallery">05 Галерея</a>':''}<a href="#outcome">Результат</a></div></div>
+<section class="wrap section" id="challenge"><div class="cols"><div class="overline">01 / ЗАДАЧА</div><div><h2>С чего всё началось</h2><p class="bodycopy">${esc(challenge)}</p></div></div></section>
+<section class="wrap section" id="approach"><div class="cols"><div class="overline">02 / ПОДХОД</div><div><h2>Мысль за решением</h2><p class="bodycopy">${esc(approach)}</p></div></div></section>
+<section class="wrap section" id="solution"><div class="cols"><div class="overline">03 / РЕШЕНИЕ</div><div><h2>Что мы сделали</h2><ul class="deliverables">${deliverables.map(x=>'<li>'+esc(x)+'</li>').join('')}</ul></div></div></section>
+${demoHtml}${gallery}
+<section class="wrap section" id="outcome"><div class="impact"><span class="overline">РЕЗУЛЬТАТ</span><h2 style="margin-top:20px">Что получилось</h2><p class="bodycopy">${esc(outcome)}</p>${story.insight?'<div class="insight"><strong>Главная мысль:</strong><span>'+esc(story.insight)+'</span></div>':''}</div></section>
+<section class="wrap end"><span class="overline">NEXT / OOOPS!</span><h2>Есть похожая<br>задача?</h2><p class="bodycopy" style="margin-bottom:28px">Расскажите, что хотите создать. Мы поможем определить направление и следующий шаг.</p><a class="button" href="/#contact">Обсудить проект ↗</a><p style="margin-top:35px"><a href="/#work">← Вернуться ко всем кейсам</a></p></section>
+</main><footer>© 2026 OOOPS! · Digital product & creative studio</footer>${galleryScript}</body></html>`);
 }
