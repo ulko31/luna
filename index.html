@@ -7,8 +7,20 @@
 <link rel="shortcut icon" type="image/svg+xml" href="/favicon.svg">
 <link rel="apple-touch-icon" href="/favicon.svg">
 
-<meta name="description" content="OOOPS! — digital product & creative studio. Проектируем цифровые продукты, создаём бренды, сайты и контент.">
-<title>OOOPS! — digital product & creative studio</title>
+<meta name="description" content="OOOPS — digital-студия в Санкт-Петербурге: разработка сайтов, веб-приложений и Telegram Mini Apps, UX/UI-дизайн, брендинг и контент для бизнеса.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://ooops.agency/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="OOOPS">
+<meta property="og:title" content="OOOPS — разработка сайтов, дизайн и digital-продукты">
+<meta property="og:description" content="OOOPS — digital-студия в Санкт-Петербурге: разработка сайтов, веб-приложений и Telegram Mini Apps, UX/UI-дизайн, брендинг и контент для бизнеса.">
+<meta property="og:url" content="https://ooops.agency/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="OOOPS — разработка сайтов, дизайн и digital-продукты">
+<meta name="twitter:description" content="OOOPS — digital-студия в Санкт-Петербурге: разработка сайтов, веб-приложений и Telegram Mini Apps, UX/UI-дизайн, брендинг и контент для бизнеса.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"OOOPS","url":"https://ooops.agency/","email":"ooopsagency@outlook.com","description":"Digital-студия: сайты, веб-приложения, UX/UI-дизайн, брендинг и контент.","areaServed":"RU","sameAs":[]}</script>
+<title>OOOPS — разработка сайтов, дизайн и digital-продукты</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -582,7 +594,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
  setText('#about .atelier-intro p',c.aboutText);setText('#contact .contact-left>p',c.contactIntro);
  const tg=document.querySelector('#contact .contact-links a[href^="https://t.me/"]');if(tg&&c.contactTelegram)tg.href=c.contactTelegram;
  const mail=document.querySelector('#contact .contact-links a[href^="mailto:"]');if(mail&&c.contactEmail)mail.href='mailto:'+c.contactEmail;
- const meta=document.querySelector('meta[name="description"]');if(meta&&c.seoDescription)meta.content=c.seoDescription;
+ const meta=document.querySelector('meta[name="description"]');if(meta&&c.seoDescription){meta.content=c.seoDescription;const og=document.querySelector('meta[property="og:description"]');if(og)og.content=c.seoDescription;const twitter=document.querySelector('meta[name="twitter:description"]');if(twitter)twitter.content=c.seoDescription;}
  const team=document.querySelector('#team .team-grid');
  if(team&&Array.isArray(data.team)){
   const fragment=document.createDocumentFragment();
