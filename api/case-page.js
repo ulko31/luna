@@ -51,7 +51,7 @@ export default async function handler(req,res){
  const p=data?.projects?.find(x=>x.id===id&&x.published);
  if(!p)return res.status(404).send('Проект не найден');
  const built=stories[id]||{};
- const story={...built,...Object.fromEntries(Object.entries(p.story||{}).filter(([k,v])=>Array.isArray(v)?v.length:typeof v==='string'&&v.trim()))};
+ const story={...built,...(p.story||{})};
  const headline=story.headline||p.description||'Визуальная история проекта';
  const challenge=story.challenge||p.details||p.description||'Исходная задача проекта.';
  const approach=story.approach||p.details||p.description||'Работа с идеей, структурой и визуальным решением.';
