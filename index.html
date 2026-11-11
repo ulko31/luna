@@ -554,19 +554,44 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
     root.replaceChildren();
     result.projects.forEach((p,i)=>{
       const article=document.createElement('article');
-      article.className='project'+(p.color==='#272727'?' case-dark':'');
-      article.style.setProperty('--layer',i);
-      article.style.setProperty('background-color',p.color,'important');
-      if(p.color==='#272727')article.style.color='#fff';
+      const st=p.story||{};
+      const archived=(st.label||'').toLowerCase().includes('портфолио')||(st.kind||'').toLowerCase().includes('архив');
+      article.className='project ooops-case-card'+(archived?' is-archive':'');
+      article.style.setProperty('--case-accent',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#d9bafa');
       const route='/portfolio/'+encodeURIComponent(p.id);
-      article.innerHTML='<div class="project-copy"><span class="project-id">'+esc(p.category)+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(p.description)+'</p><a class="case-link" href="'+route+'">Открыть кейс</a></div><div class="project-art"><div class="case-panel case-panel-real" data-presentation="'+(p.coverPresentation==='framed'?'framed':'clean')+'">'+(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'')+'</div></div>';
-      const img=article.querySelector('img');if(img){img.style.setProperty('--x',(Number(p.posX)||50)+'%');img.style.setProperty('--y',(Number(p.posY)||50)+'%');img.style.setProperty('--zoom',String((Number(p.zoom)||100)/100));img.style.setProperty('--fit',p.coverFit==='cover'?'cover':'contain')}
+      const visual=p.cover&&!archived?'<div class="case-shot"><div class="case-shot-toolbar"><i></i><i></i><i></i><span>OOOPS / PROJECT VIEW</span></div><img loading="lazy" src="'+esc(media(p.cover))+'" alt="Материалы проекта '+esc(p.title)+'"></div>':'<div class="case-type-cover"><span>OOOPS! / '+esc(archived?'DESIGN ARCHIVE':'DIGITAL PRODUCT')+'</span><strong>'+esc(p.title)+'</strong><small>VIEW THE STORY ↗</small></div>';
+      article.innerHTML='<div class="project-copy"><span class="project-id">'+esc(st.label||p.category)+'</span><h3><a class="project-title-link" href="'+route+'">'+esc(p.title)+'</a></h3><p>'+esc(st.headline||p.description)+'</p><a class="case-link" href="'+route+'">Смотреть проект <span aria-hidden="true">↗</span></a></div><div class="project-art">'+visual+'</div>';
+      const img=article.querySelector('img');if(img){img.style.setProperty('object-position',(Number(p.posX)||50)+'% '+(Number(p.posY)||50)+'%');img.style.setProperty('object-fit',p.coverFit==='cover'?'cover':'contain')}
       root.appendChild(article);
     });
   }catch(err){console.warn('Portfolio CMS unavailable: using existing cards')}
 })();
 </script>
 
+
+<style>
+/* 2026 portfolio system: consistent editorial cards; all items source from public CMS. */
+#work .projects{display:flex!important;flex-direction:column!important;gap:23px!important}
+#work .projects .ooops-case-card,
+#work .projects .ooops-case-card:nth-child(n){position:relative!important;top:auto!important;transform:none!important;height:auto!important;min-height:470px!important;display:grid!important;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;gap:0!important;background:#fbfaf7!important;color:#191919!important;border:1px solid #d9d6d0!important;border-radius:14px!important;overflow:hidden!important;box-shadow:none!important}
+#work .ooops-case-card .project-copy{display:flex!important;flex-direction:column!important;align-items:flex-start!important;justify-content:center!important;gap:22px!important;padding:clamp(25px,4vw,55px)!important;color:#191919!important}
+#work .ooops-case-card .project-copy h3{font-size:clamp(38px,5vw,73px)!important;line-height:1.02!important;letter-spacing:-.07em!important;margin:0!important}
+#work .ooops-case-card .project-copy h3 a{color:inherit!important;text-decoration:none!important}
+#work .ooops-case-card .project-copy p{font-size:clamp(15px,1.5vw,18px)!important;line-height:1.55!important;max-width:440px!important;margin:0!important;color:#565054!important}
+#work .ooops-case-card .project-id{display:inline-flex!important;background:#fff!important;border:1px solid #ddd8cf!important;border-radius:90px!important;font-size:11px!important;color:#4b4348!important;padding:10px 13px!important;text-transform:none!important;letter-spacing:.04em!important}
+#work .ooops-case-card .case-link{font-size:14px!important;font-weight:750!important;display:inline-flex!important;border:0!important;border-bottom:1px solid #111!important;padding:0 0 8px!important;color:#191919!important;background:transparent!important;border-radius:0!important;text-decoration:none!important}
+#work .ooops-case-card .project-art{min-width:0!important;display:flex!important;align-items:stretch!important;justify-content:stretch!important;background:var(--case-accent,#d9bafa)!important;padding:clamp(14px,3vw,36px)!important}
+#work .ooops-case-card .case-shot{min-width:0;width:100%;background:#fff;border-radius:11px;display:flex;flex-direction:column;box-shadow:0 18px 35px #0002;overflow:hidden;align-self:center}
+#work .ooops-case-card .case-shot-toolbar{display:flex;align-items:center;gap:5px;padding:11px 14px;border-bottom:1px solid #eee}
+#work .ooops-case-card .case-shot-toolbar i{width:7px;height:7px;border-radius:50%;background:#d8d3d7}
+#work .ooops-case-card .case-shot-toolbar span{margin-left:auto;font-size:9px;letter-spacing:.1em;color:#777}
+#work .ooops-case-card .case-shot img{display:block;max-height:400px;height:auto;width:100%;object-fit:contain!important;object-position:center!important;transform:none!important}
+#work .ooops-case-card .case-type-cover{min-height:380px;width:100%;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;padding:clamp(22px,3vw,43px);border:1px solid #0002;border-radius:10px;color:#191919;background:#fff5;gap:18px}
+#work .ooops-case-card .case-type-cover span,#work .ooops-case-card .case-type-cover small{font-size:11px;font-weight:750;letter-spacing:.12em}
+#work .ooops-case-card .case-type-cover strong{font-family:Manrope,sans-serif;font-size:clamp(38px,5vw,79px);letter-spacing:-.08em;line-height:1.04;overflow-wrap:anywhere}
+#work .ooops-case-card.is-archive .project-art{background:#ede8e2!important}
+@media(max-width:760px){#work .projects .ooops-case-card,#work .projects .ooops-case-card:nth-child(n){grid-template-columns:1fr!important;min-height:0!important}#work .ooops-case-card .project-copy{padding:25px!important;gap:15px!important}#work .ooops-case-card .project-art{min-height:280px!important;padding:15px!important}#work .ooops-case-card .case-shot img{max-height:300px}#work .ooops-case-card .case-type-cover{min-height:270px}}
+</style>
 <style>
 /* Published team image editing remains faithful to the site's original portrait treatment. */
 .team-grid .team-photo img{object-position:var(--portrait-x,50%) var(--portrait-y,50%)!important;transform:scale(var(--portrait-zoom,1))!important;transform-origin:var(--portrait-x,50%) var(--portrait-y,50%)!important}
