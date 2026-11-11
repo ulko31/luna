@@ -41,7 +41,17 @@ if(!data.catalogV4){
  data.projects.sort((a,b)=>{const ia=spotlight.indexOf(a.id),ib=spotlight.indexOf(b.id);return (ia<0?100:ia)-(ib<0?100:ib)});
  data.catalogV4=true;
 }
-for(const p of data.projects||[]){const fallback=stories[p.id];if(fallback){p.story={...fallback,...(p.story||{})};}}return {data,etag:blob.etag||null};}catch(e){if(e?.status===404||e?.code==='not_found'||/not found/i.test(String(e.message)))return {data:null,etag:null};throw e}}
+for(const p of data.projects||[]){
+ const fallback=stories[p.id];
+ if(fallback){p.story={...fallback,...(p.story||{})};}
+ const labelMap={'Действующий цифровой проект':'Приложение / MVP','Рабочий образовательный инструмент':'EdTech / Платформа','Реализованный проект':'Веб-проект','Дизайн-портфолио':'Другие работы'};
+ const kindMap={'Архив · Дизайн-концепт':'Дизайн-концепция','Архив · Графический дизайн':'Айдентика / Графика'};
+ if(p.story?.label&&labelMap[p.story.label])p.story.label=labelMap[p.story.label];
+ if(p.story?.kind&&kindMap[p.story.kind])p.story.kind=kindMap[p.story.kind];
+ if(p.category==='Архив · Дизайн-концепт')p.category='Веб-дизайн · Концепция';
+ if(fallback?.impact&&typeof p.story?.impact==='string'&&/не заявля|не утверждение|не представляем|не опубликован/i.test(p.story.impact))p.story.impact=fallback.impact;
+}
+return {data,etag:blob.etag||null};}catch(e){if(e?.status===404||e?.code==='not_found'||/not found/i.test(String(e.message)))return {data:null,etag:null};throw e}}
 export async function save(data,etag){const opts={access:'private',contentType:'application/json',allowOverwrite:true};if(etag)opts.ifMatch=etag;return put(PATH,JSON.stringify(data),opts)}
 export function secret(){return process.env.OOOPS_SESSION_SECRET||''}
 function hash(pwd,salt){return scryptSync(pwd,salt,64).toString('hex')}
