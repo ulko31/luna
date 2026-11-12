@@ -33,11 +33,11 @@ async function render(){
    const target=Math.min(1.25,width/base.width)*scale;
    const viewport=page.getViewport({scale:target});
    const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{alpha:false});
-   const ratio=Math.min(1.5,window.devicePixelRatio||1);
+   const ratio=Math.min(key==='stankevich'?2.35:2,Math.max(2,window.devicePixelRatio||1));
    canvas.width=Math.max(1,Math.floor(viewport.width*ratio));canvas.height=Math.max(1,Math.floor(viewport.height*ratio));
    canvas.style.width=Math.round(viewport.width)+'px';canvas.style.height=Math.round(viewport.height)+'px';
    let shell=null;
-   if(key==='stankevich' && num===1){
+   if(false && key==='stankevich' && num===1){
      shell=document.createElement('div');
      shell.className='design-shell';
      shell.style.width=Math.round(viewport.width)+'px';
@@ -95,18 +95,11 @@ function fallback(err){
  try{
  binary=await loadBinary();
  if(key==='stankevich'){
-   const objectUrl=URL.createObjectURL(new Blob([binary],{type:'application/pdf'}));
-   status.style.display='none';
-   pages.style.padding='0';
-   const frame=document.createElement('iframe');
-   frame.title='Кружок Станкевича — оригинальный PDF';
-   frame.style.cssText='border:0;width:100%;height:calc(100dvh - 85px);min-height:680px;background:white';
-   frame.src=objectUrl+'#view=FitH';
-   pages.appendChild(frame);
-   document.getElementById('minus').style.display='none';
-   document.getElementById('plus').style.display='none';
-   document.getElementById('zoomLabel').textContent='PDF';
-   return;
+   // Original PDF rendered in-page by PDF.js, without the native PDF toolbar or page thumbnails.
+   document.querySelector('header').style.display='none';
+   document.getElementById('pages').style.padding='18px 8px 35px';
+   document.getElementById('pages').style.gap='0';
+   document.getElementById('pages').style.background='#f5f3ef';
  }
  const lib=document.createElement('script');lib.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
  await new Promise((resolve,reject)=>{lib.onload=resolve;lib.onerror=reject;document.head.appendChild(lib)});
