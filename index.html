@@ -575,7 +575,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       const route='/portfolio/'+encodeURIComponent(p.id);
       if(p.id==='calendar'){p.title='Just';p.description=(p.description||'Календарь и планирование')+' · Голосовой ввод';}
       let visual='';
-      if(p.id==='tutor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>TIME LAB / DIGITAL CLASSROOM</span></div><iframe title="Интерфейс Time Lab" loading="lazy" src="https://time-lab-english.wintry-moss-6546.chatgpt.site/learn" tabindex="-1"></iframe></div>';
+      if(p.id==='tutor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>TIME LAB / DIGITAL CLASSROOM</span></div><iframe title="Интерфейс Time Lab" loading="lazy" src="/demo/time-lab.html" tabindex="-1"></iframe></div>';
       else if(p.id==='calendar')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>CALENDAR / WEB APPLICATION</span></div><iframe title="Превью календаря" loading="lazy" src="https://just-calendar-livid.vercel.app/" tabindex="-1"></iframe></div>';
       else if(p.id==='dvor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>ДВОР.ДЕТИ / WEB</span></div><div class="case-real-preview">'+coverImage(p)+'</div></div>';
       else visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>SOFE / PRODUCT PREVIEW</span></div><div class="case-real-preview">'+coverImage(p)+'</div></div>';
