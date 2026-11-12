@@ -26,29 +26,60 @@ async function loadBinary(){
  return merged;
 }
 async function render(){
- pages.replaceChildren();status.style.display='block';status.textContent='Рисуем страницы…';
- const width=Math.min(1250,Math.max(300,window.innerWidth-42)),scale=zoom;
- for(let num=1;num<=pdf.numPages;num++){
-   const page=await pdf.getPage(num),base=page.getViewport({scale:1});
-   const target=Math.min(1.25,width/base.width)*scale;
-   const viewport=page.getViewport({scale:target});
-   const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{alpha:false});
-   const ratio=Math.min(key==='stankevich'?2.35:2,Math.max(2,window.devicePixelRatio||1));
-   canvas.width=Math.max(1,Math.floor(viewport.width*ratio));canvas.height=Math.max(1,Math.floor(viewport.height*ratio));
-   canvas.style.width=Math.round(viewport.width)+'px';canvas.style.height=Math.round(viewport.height)+'px';
-   let shell=null;
-   if(false && key==='stankevich' && num===1){
-     shell=document.createElement('div');
-     shell.className='design-shell';
-     shell.style.width=Math.round(viewport.width)+'px';
-     shell.style.height=Math.round(viewport.height)+'px';
-     shell.appendChild(canvas);
-     pages.appendChild(shell);
-   } else pages.appendChild(canvas);
-   await page.render({canvasContext:ctx,viewport,transform:ratio===1?null:[ratio,0,0,ratio,0,0]}).promise;
-   if(shell)installInteractiveHotspots(shell,viewport.width,viewport.height);
- }
- status.style.display='none';document.getElementById('zoomLabel').textContent=Math.round(zoom*100)+'%';
+  pages.replaceChildren();
+  status.style.display='block';
+  status.textContent='Подготавливаем страницы…';
+  const width=Math.min(1250,Math.max(300,window.innerWidth-42));
+  const scale=zoom;
+  const pending=[];
+  for(let num=1;num<=pdf.numPages;num++){
+    const page=await pdf.getPage(num),base=page.getViewport({scale:1});
+    const target=Math.min(1.25,width/base.width)*scale;
+    const viewport=page.getViewport({scale:target});
+    // PDF of a long website can be more than 11,000 pixels high.
+    // Render small viewport slices, not a giant canvas that exceeds browser GPU limits.
+    const tileHeight=key==='stankevich'?850:1500;
+    const tileCount=Math.ceil(viewport.height/tileHeight);
+    for(let n=0;n<tileCount;n++){
+      const y=n*tileHeight,h=Math.min(tileHeight,viewport.height-y);
+      const shell=document.createElement('div');
+      shell.style.cssText='width:'+Math.ceil(viewport.width)+'px;height:'+Math.ceil(h)+'px;max-width:100%;overflow:hidden;background:#fff;line-height:0';
+      const canvas=document.createElement('canvas');
+      canvas.style.cssText='display:block;width:'+Math.ceil(viewport.width)+'px;height:'+Math.ceil(h)+'px;box-shadow:none;max-width:100%;background:white';
+      shell.appendChild(canvas);pages.appendChild(shell);
+      pending.push({page,viewport,canvas,y,h,shell});
+    }
+  }
+  status.style.display='none';
+  document.getElementById('zoomLabel').textContent=Math.round(zoom*100)+'%';
+  let observer=null;
+  let queue=Promise.resolve();
+  const drawn=new WeakSet();
+  async function paint(tile){
+    if(drawn.has(tile.canvas))return;
+    drawn.add(tile.canvas);
+    const pixelRatio=Math.min(2,Math.max(1.5,window.devicePixelRatio||1));
+    const {canvas,viewport,y,h,page}=tile;
+    canvas.width=Math.max(1,Math.ceil(viewport.width*pixelRatio));
+    canvas.height=Math.max(1,Math.ceil(h*pixelRatio));
+    const ctx=canvas.getContext('2d',{alpha:false});
+    ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+    await page.render({
+      canvasContext:ctx,viewport,
+      transform:[pixelRatio,0,0,pixelRatio,0,-y*pixelRatio]
+    }).promise;
+  }
+  const schedule=tile=>{queue=queue.then(()=>paint(tile)).catch(e=>{console.warn('PDF tile:',e);tile.canvas.replaceWith(Object.assign(document.createElement('div'),{textContent:'Не удалось отрисовать часть страницы. Попробуйте обновить.'}));});};
+  if('IntersectionObserver' in window){
+    observer=new IntersectionObserver(entries=>{
+      for(const entry of entries){
+        if(!entry.isIntersecting)continue;
+        const tile=pending.find(x=>x.shell===entry.target);
+        if(tile){observer.unobserve(tile.shell);schedule(tile);}
+      }
+    },{rootMargin:'950px 0px'});
+    pending.forEach(tile=>observer.observe(tile.shell));
+  }else pending.forEach(schedule);
 }
 
 // Interactive navigation is layered over the original design — no redraw of typography, images or layout.
