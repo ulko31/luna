@@ -1,0 +1,61 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OOOPS · Просмотр проекта</title><style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#f5f3ef;color:#24211f;font-family:system-ui,-apple-system,sans-serif}
+header{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 22px;border-bottom:1px solid #e0dcd6;background:#fff;position:sticky;top:0;z-index:3;flex-wrap:wrap}h1{margin:0;font-size:15px;letter-spacing:-.02em}header span{font-size:12px;color:#7a7470}.toolbar{display:flex;align-items:center;gap:10px}.toolbar button{border:1px solid #d9d4ce;background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer}.toolbar button:hover{background:#e4d4fa}#pages{padding:20px max(12px,3vw);display:flex;flex-direction:column;align-items:center;gap:16px}canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 5px 20px #00000014}#status{padding:55px 20px;text-align:center;color:#6e6660}#fallback{display:none;padding:25px;margin:20px auto;max-width:700px;text-align:center;background:#fff;border-radius:12px}#fallback iframe{border:0;width:100%;height:70vh;background:#fff}a{color:inherit}button:disabled{opacity:.45;cursor:not-allowed}
+</style></head><body>
+<header><div><h1 id="name">OOOPS · Исходный дизайн</h1><span>Прокручивайте, чтобы посмотреть полный проект</span></div><div class="toolbar"><button id="minus" aria-label="Уменьшить масштаб">−</button><span id="zoomLabel">100%</span><button id="plus" aria-label="Увеличить масштаб">+</button></div></header>
+<div id="status" role="status">Загружаем оригинальный макет…</div><main id="pages"></main><div id="fallback">Не удалось открыть интерактивный просмотр.<div style="margin-top:18px"><a id="download" target="_blank" rel="noopener">Открыть исходный PDF</a></div><iframe id="native" title="PDF"></iframe></div>
+<script>
+const manifest={
+ starostin:{parts:6,title:'Старостин',source:'https://drive.google.com/file/d/1dbkSTDrS5E4oEQ5n-igg0BCBVbLVvwPk/view'},
+ brics:{url:'/assets/portfolio/brics.pdf',title:'БРИКС'},
+ espachicas:{url:'/assets/portfolio/espachicas.pdf',title:'Espachicas'}
+};
+const key=new URLSearchParams(location.search).get('key'),entry=manifest[key];
+const status=document.getElementById('status'),pages=document.getElementById('pages');
+let pdf=null,zoom=1,binary=null;
+async function loadBinary(){
+ if(entry.url){const r=await fetch(entry.url);if(!r.ok)throw Error('PDF '+r.status);return new Uint8Array(await r.arrayBuffer())}
+ const parts=await Promise.all(Array.from({length:entry.parts},(_,i)=>fetch('/assets/portfolio/'+key+'.part'+i).then(r=>{if(!r.ok)throw Error('Part '+i+' '+r.status);return r.arrayBuffer()})));
+ const total=parts.reduce((sum,b)=>sum+b.byteLength,0),merged=new Uint8Array(total);
+ let cursor=0;for(const b of parts){merged.set(new Uint8Array(b),cursor);cursor+=b.byteLength}
+ return merged;
+}
+async function render(){
+ pages.replaceChildren();status.style.display='block';status.textContent='Рисуем страницы…';
+ const width=Math.min(1250,Math.max(300,window.innerWidth-42)),scale=zoom;
+ for(let num=1;num<=pdf.numPages;num++){
+   const page=await pdf.getPage(num),base=page.getViewport({scale:1});
+   const target=Math.min(1.25,width/base.width)*scale;
+   const viewport=page.getViewport({scale:target});
+   const canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{alpha:false});
+   const ratio=Math.min(1.5,window.devicePixelRatio||1);
+   canvas.width=Math.max(1,Math.floor(viewport.width*ratio));canvas.height=Math.max(1,Math.floor(viewport.height*ratio));
+   canvas.style.width=Math.round(viewport.width)+'px';canvas.style.height=Math.round(viewport.height)+'px';
+   pages.appendChild(canvas);
+   await page.render({canvasContext:ctx,viewport,transform:ratio===1?null:[ratio,0,0,ratio,0,0]}).promise;
+ }
+ status.style.display='none';document.getElementById('zoomLabel').textContent=Math.round(zoom*100)+'%';
+}
+function fallback(err){
+ status.style.display='none';const f=document.getElementById('fallback');f.style.display='block';
+ console.warn('PDF preview unavailable',err);
+ if(entry.source)document.getElementById('download').href=entry.source;
+ if(binary){const blob=URL.createObjectURL(new Blob([binary],{type:'application/pdf'}));document.getElementById('native').src=blob;document.getElementById('download').href=blob}
+}
+(async()=>{
+ if(!entry){status.textContent='Проект не найден';return}
+ document.getElementById('name').textContent=entry.title+' · полный дизайн';
+ if(entry.source)document.getElementById('download').href=entry.source;
+ try{
+ binary=await loadBinary();
+ const lib=document.createElement('script');lib.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+ await new Promise((resolve,reject)=>{lib.onload=resolve;lib.onerror=reject;document.head.appendChild(lib)});
+ if(!window.pdfjsLib)throw Error('PDF library unavailable');
+ window.pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+ pdf=await window.pdfjsLib.getDocument({data:binary.slice()}).promise;
+ await render();
+ }catch(e){fallback(e)}
+})();
+document.getElementById('minus').onclick=()=>{if(pdf){zoom=Math.max(.5,zoom-.2);render().catch(fallback)}};
+document.getElementById('plus').onclick=()=>{if(pdf){zoom=Math.min(1.6,zoom+.2);render().catch(fallback)}};
+</script></body></html>
