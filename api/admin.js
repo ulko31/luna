@@ -48,6 +48,11 @@ if(!data.catalogV5){
  }
  data.catalogV5=true;
 }
+if(!data.catalogV6){
+ const alfa=data.projects?.find(p=>p.id==='alfa_credit');
+ if(alfa){alfa.published=true;alfa.story={...(alfa.story||{}),label:'Демо / Концепция',kind:'FinTech · Независимый прототип'};}
+ data.catalogV6=true;
+}
 for(const p of data.projects||[]){
  if(p.id==='dvor'&&(!p.cover||p.cover==='/assets/cases/dvor.svg')){
    p.cover='/assets/cases/dvor-real.jpg';p.coverFit='contain';p.posX=50;p.posY=50;p.zoom=100;
