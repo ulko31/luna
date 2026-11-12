@@ -5,6 +5,27 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const asMedia=u=>typeof u==='string'&&u.startsWith('media/')?'/api/media?key='+encodeURIComponent(u):u;
 const safeImg=u=>{const s=asMedia(u);return typeof s==='string'&&(/^(\/assets\/|\/api\/media\?key=|https:\/\/raw\.githubusercontent\.com\/ulko31\/sofe\/main\/images\/)/.test(s))?s:''};
 const style=`
+/* Compact case layouts and visible navigation back to OOOPS. */
+nav .home-link{border:1px solid #dad4ce;padding:10px 13px;border-radius:9px;background:#fff;white-space:nowrap}
+nav .home-link:hover{background:#eaddfa;color:#242024}
+@media(max-width:740px){
+ nav{padding:12px 15px;gap:8px;flex-wrap:wrap}
+ nav .brand{font-size:22px}
+ nav .navlinks{gap:8px;font-size:12px}
+ nav .navlinks a{font-size:11px}
+ nav .navlinks a[href="/#work"]{display:none}
+ .hero{padding-top:32px!important;padding-bottom:34px!important}
+ .hero-description{font-size:clamp(18px,4.8vw,25px)!important}
+ .hero-footer{margin-top:20px!important}
+ .section{padding-top:43px!important;padding-bottom:43px!important}
+ .big-visual{padding:12px!important}
+ .interactive-cover{height:clamp(350px,65vh,600px)!important}
+ .alfa-case-preview{height:auto!important}
+ .bodycopy{font-size:16px!important;line-height:1.5!important}
+ .source-note{line-height:1.5}
+}
+@media(min-width:741px){.hero{padding-top:65px;padding-bottom:42px}.section{padding-top:75px;padding-bottom:75px}}
+
 /* Display the real 1440px Alfa application without cutting off its left edge. */
 .alfa-case-preview .alfa-viewport{position:relative;width:100%;height:auto;overflow:hidden;background:#2e2e2e;flex:none}
 .alfa-case-preview .alfa-viewport iframe{display:block!important;position:absolute!important;top:0!important;left:0!important;width:1440px!important;height:900px!important;min-height:0!important;max-width:none!important;border:0!important;transform-origin:top left!important;transform:scale(var(--alfa-scale,1))!important;flex:none!important;background:#2e2e2e!important}
@@ -84,12 +105,12 @@ export default async function handler(req,res){
  const title=p.title+(isArchive?' — дизайн-портфолио OOOPS':' — кейс digital-студии OOOPS');
  const desc=String(p.description||headline).slice(0,160);
  const cover=safeImg(p.cover);
- const images=(id==='sofe'?[]:(Array.isArray(p.images)?p.images:[])).map(x=>({url:safeImg(x.url),caption:x.caption||p.title})).filter(x=>x.url);
+ const images=(['sofe','calendar'].includes(id)?[]:(Array.isArray(p.images)?p.images:[])).map(x=>({url:safeImg(x.url),caption:x.caption||p.title})).filter(x=>x.url);
  const schema=JSON.stringify({'@context':'https://schema.org','@type':'CreativeWork',name:p.title,description:desc,url,creator:{'@type':'Organization',name:'OOOPS',url:'https://ooops.agency/'}}).replace(/</g,'\\u003c');
  const accent=/^#[0-9a-fA-F]{6}$/.test(p.color||'')?p.color:'#d5c4fa';
  const demo=['sofe','tutor','dvor'].includes(story.demo)?story.demo:'';
  const pdf=typeof story.sourcePdf==='string'&&story.sourcePdf.startsWith('/assets/portfolio/')&&story.sourcePdf.endsWith('.pdf')?story.sourcePdf:'';
- const live=id==='alfa_credit'?'https://alpha-scenario-demo-web.onrender.com/':(['https://sofe-jade.vercel.app/','https://time-lab-english.wintry-moss-6546.chatgpt.site/','https://just-calendar-livid.vercel.app/','https://xn--b1ad5ai.xn--d1acj3b/'].includes(story.liveUrl)?story.liveUrl:'');
+ const live=id==='calendar'?'/demo/just.html':id==='alfa_credit'?'https://alpha-scenario-demo-web.onrender.com/':(['https://sofe-jade.vercel.app/','https://time-lab-english.wintry-moss-6546.chatgpt.site/','https://just-calendar-livid.vercel.app/','https://xn--b1ad5ai.xn--d1acj3b/'].includes(story.liveUrl)?story.liveUrl:'');
  const externalPreview=['sofe','calendar'].includes(id)?live:'';
 
  const gallery=images.length>0?`<section class="wrap section" id="gallery"><div class="cols"><div class="overline">05 / МАТЕРИАЛЫ</div><div><h2>Макеты и детали</h2><p class="muted">Переключайте изображения, чтобы посмотреть материалы проекта в удобном размере.</p><div class="gallery-stage"><div class="gallery-display"><img id="gallery-image" src="${esc(images[0].url)}" alt="${esc(images[0].caption)}"></div><div class="gallery-bar"><button type="button" class="arrow" id="prev-image" aria-label="Предыдущее изображение">← Назад</button><span class="counter" id="gallery-counter">1 / ${images.length}</span><button type="button" class="arrow" id="next-image" aria-label="Следующее изображение">Далее →</button></div></div></div></div></section>`:'';
@@ -103,13 +124,13 @@ export default async function handler(req,res){
  const alfaScaleScript=id==='alfa_credit'?"<script>(function(){const viewport=document.getElementById('alfa-viewport');if(!viewport)return;const fit=()=>{const w=viewport.clientWidth;if(!w)return;const scale=Math.min(1,w/1440);viewport.style.setProperty('--alfa-scale',String(scale));viewport.style.height=Math.ceil(900*scale)+'px'};fit();if(typeof ResizeObserver!=='undefined')new ResizeObserver(fit).observe(viewport);else window.addEventListener('resize',fit);})();</script>":'';
  const sourceHtml=pdf?`<p class="source-note">Оригинальный дизайн из портфолио — листайте макет прямо в окне. <a href="${esc(pdf)}" target="_blank" rel="noopener noreferrer">Развернуть полный макет ↗</a></p>`:'';
  const sourceFileHtml=(id==='stankevich'||localPdf||localVideo)?'':sourceLink?`<p class="source-note">Материалы проекта из портфолио. Если встроенный просмотр недоступен, <a class="case-original-link" href="${esc(sourceLink)}" target="_blank" rel="noopener noreferrer">откройте исходный файл в Google Диске ↗</a></p>`:'';
- const alfaDemo=id==='alfa_credit'?`<p class="source-note">Оригинальный React-продукт с расчётами FastAPI, картой возможностей и прогнозом. Нажмите «Попробовать без входа» для отдельного синтетического гостевого профиля. <a class="case-original-link" href="https://alpha-scenario-demo-web.onrender.com/" target="_blank" rel="noopener noreferrer">Открыть полноэкранную демоверсию ↗</a>. Не является официальным сервисом банка или кредитным предложением.</p>`:'';
+ const alfaDemo=id==='alfa_credit'?`<p class="source-note">Интерактивный прототип с расчётами и сравнением финансовых решений. <a class="case-original-link" href="https://alpha-scenario-demo-web.onrender.com/" target="_blank" rel="noopener noreferrer">Открыть демоверсию →</a>. Демонстрационный проект, не банковская услуга.</p>`:'';
  const guidedDemo=id==='tutor'?`<p class="source-note">Выше — открытая демонстрация учебных сценариев без регистрации и доступа к данным реальных учеников. <a class="case-original-link" href="${esc(live)}" target="_blank" rel="noopener noreferrer">Открыть оригинальное приложение Time Lab ↗</a> (личный кабинет потребует входа).</p>`:'';
- const liveHtml=live?`<p class="source-note">${id==='sofe'?'Здесь встроено настоящее приложение SOFE с Vercel, а не набор скриншотов. Если некоторые разделы ограничены экраном, откройте полную версию в отдельной вкладке.':'Выше показан исходный интерфейс, если сайт разрешает встраивание. Для персональных функций может потребоваться вход.'} <a class="case-original-link" href="${esc(live)}" target="_blank" rel="noopener noreferrer">${id==='sofe'?'Открыть полное приложение SOFE ↗':'Открыть исходный сайт или приложение ↗'}</a></p>`:'';
+ const liveHtml=id==='calendar'?`<p class="source-note">Демонстрационный календарь: только вымышленные события, без чужих аккаунтов. <a class="case-original-link" href="/demo/just.html" target="_blank" rel="noopener noreferrer">Открыть безопасную демоверсию →</a></p>`:id==='sofe'?`<p class="source-note">Интерактивный продукт SOFE. <a class="case-original-link" href="${esc(live)}" target="_blank" rel="noopener noreferrer">Открыть приложение →</a></p>`:'';
  return res.status(200).send(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f3ef"><meta name="robots" content="index,follow,max-image-preview:large"><title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${url}"><meta property="og:type" content="article"><meta property="og:site_name" content="OOOPS"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><script type="application/ld+json">${schema}</script><style>${style}</style></head><body>
-<nav><a class="brand" href="/">OOO<em>PS!</em></a><div class="navlinks"><a href="/#work">Портфолио</a><a href="/#contact">Обсудить проект ↗</a></div></nav>
+<nav><a class="brand" href="/" aria-label="Вернуться на главную">OOO<em>PS!</em></a><div class="navlinks"><a class="home-link" href="/">← На главную</a><a href="/#work">Все проекты</a><a href="/#contact">Обсудить проект <span class="icon-arrow" aria-hidden="true">→</span></a></div></nav>
 <main>
-<header class="hero wrap"><div class="hero-top"><span class="overline">OOOPS / CASE STUDY</span><span class="pill">${esc(id==='glasses'?'Веб-дизайн':story.kind||p.category||'Проект')}</span><span class="pill">${esc(id==='glasses'?'Дизайн сайта':story.label||'Портфолио')}</span></div><h1>${esc(p.title)}</h1><p class="hero-description">${esc(headline)}</p><div class="hero-footer"><a class="button" href="#challenge">Исследовать кейс ↓</a><span class="muted" style="font-size:12px">Идея · Процесс · Решение · Результат</span></div></header>
+<header class="hero wrap"><div class="hero-top"><span class="overline">OOOPS / CASE STUDY</span><span class="pill">${esc(id==='glasses'?'Веб-дизайн':story.kind||p.category||'Проект')}</span><span class="pill">${esc(id==='glasses'?'Дизайн сайта':story.label||'Портфолио')}</span></div><h1>${esc(p.title)}</h1><p class="hero-description">${esc(headline)}</p><div class="hero-footer"><a class="button" href="#challenge">Смотреть кейс ↓</a><span class="muted" style="font-size:12px">Идея · Процесс · Решение · Результат</span></div></header>
 <div class="wrap"><div class="big-visual" style="--caseColor:${accent}">${heroWidget}<span class="corner">OOOPS! / ${esc(p.title)}</span></div>${sourceHtml}${sourceFileHtml}${alfaDemo}${guidedDemo}${liveHtml}<div class="index-row"><a href="#challenge">Задача</a><a href="#approach">Подход</a><a href="#solution">Что сделали</a>${images.length?'<a href="#gallery">Макеты</a>':''}<a href="#outcome">Результат</a></div></div>
 <section class="wrap section" id="challenge"><div class="cols"><div class="overline">01 / ЗАДАЧА</div><div><h2>С чего всё началось</h2><p class="bodycopy">${esc(challenge)}</p></div></div></section>
 <section class="wrap section" id="approach"><div class="cols"><div class="overline">02 / ПОДХОД</div><div><h2>Мысль за решением</h2><p class="bodycopy">${esc(approach)}</p></div></div></section>
