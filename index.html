@@ -577,7 +577,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
     root.replaceChildren();
     const important=['sofe','tutor','dvor','calendar'];
     const featured=important.map(id=>result.projects.find(p=>p.id===id)).filter(Boolean);
-    const displayPriority=['stankevich','artcorpus','starostin','muf','glasses','deepsweep','espachicas','interior','visuals','brics','academy'];
+    const displayPriority=['alfa_credit','stankevich','artcorpus','starostin','muf','glasses','deepsweep','espachicas','interior','visuals','brics','academy'];
     const other=result.projects.filter(p=>!important.includes(p.id)).sort((a,b)=>{const ia=displayPriority.indexOf(a.id),ib=displayPriority.indexOf(b.id);return (ia<0?99:ia)-(ib<0?99:ib)});
     const coverImage=p=>p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+' — материалы проекта">':'';
     featured.forEach((p,i)=>{
