@@ -41,6 +41,13 @@ if(!data.catalogV4){
  data.projects.sort((a,b)=>{const ia=spotlight.indexOf(a.id),ib=spotlight.indexOf(b.id);return (ia<0?100:ia)-(ib<0?100:ib)});
  data.catalogV4=true;
 }
+if(!data.catalogV5){
+ const draft=supplementary.find(p=>p.id==='alfa_credit');
+ if(draft&&!data.projects.some(p=>p.id===draft.id)){
+  data.projects.push({...draft,coverFit:'contain',coverPresentation:'clean',posX:50,posY:50,zoom:100});
+ }
+ data.catalogV5=true;
+}
 for(const p of data.projects||[]){
  if(p.id==='dvor'&&(!p.cover||p.cover==='/assets/cases/dvor.svg')){
    p.cover='/assets/cases/dvor-real.jpg';p.coverFit='contain';p.posX=50;p.posY=50;p.zoom=100;
