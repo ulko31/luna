@@ -79,7 +79,7 @@ export default async function handler(req,res){
  const title=p.title+(isArchive?' — дизайн-портфолио OOOPS':' — кейс digital-студии OOOPS');
  const desc=String(p.description||headline).slice(0,160);
  const cover=safeImg(p.cover);
- const images=(Array.isArray(p.images)?p.images:[]).map(x=>({url:safeImg(x.url),caption:x.caption||p.title})).filter(x=>x.url);
+ const images=(id==='sofe'?[]:(Array.isArray(p.images)?p.images:[])).map(x=>({url:safeImg(x.url),caption:x.caption||p.title})).filter(x=>x.url);
  const schema=JSON.stringify({'@context':'https://schema.org','@type':'CreativeWork',name:p.title,description:desc,url,creator:{'@type':'Organization',name:'OOOPS',url:'https://ooops.agency/'}}).replace(/</g,'\\u003c');
  const accent=/^#[0-9a-fA-F]{6}$/.test(p.color||'')?p.color:'#d5c4fa';
  const demo=['sofe','tutor','dvor'].includes(story.demo)?story.demo:'';
@@ -98,7 +98,7 @@ export default async function handler(req,res){
  const sourceHtml=pdf?`<p class="source-note">Оригинальный дизайн из портфолио — листайте макет прямо в окне. <a href="${esc(pdf)}" target="_blank" rel="noopener noreferrer">Развернуть полный макет ↗</a></p>`:'';
  const sourceFileHtml=id==='stankevich'?'':sourceLink?`<p class="source-note">Материалы проекта из портфолио. Если встроенный просмотр недоступен, <a class="case-original-link" href="${esc(sourceLink)}" target="_blank" rel="noopener noreferrer">откройте исходный файл в Google Диске ↗</a></p>`:'';
  const guidedDemo=id==='tutor'?`<p class="source-note">Выше — открытая демонстрация учебных сценариев без регистрации и доступа к данным реальных учеников. <a class="case-original-link" href="${esc(live)}" target="_blank" rel="noopener noreferrer">Открыть оригинальное приложение Time Lab ↗</a> (личный кабинет потребует входа).</p>`:'';
- const liveHtml=live?`<p class="source-note">Выше показан исходный интерфейс, если сайт разрешает встраивание. Для персональных функций может потребоваться вход. <a class="case-original-link" href="${esc(live)}" target="_blank" rel="noopener noreferrer">Открыть исходный сайт или приложение ↗</a></p>`:'';
+ const liveHtml=live?`<p class="source-note">${id==='sofe'?'Здесь встроено настоящее приложение SOFE с Vercel, а не набор скриншотов. Если некоторые разделы ограничены экраном, откройте полную версию в отдельной вкладке.':'Выше показан исходный интерфейс, если сайт разрешает встраивание. Для персональных функций может потребоваться вход.'} <a class="case-original-link" href="${esc(live)}" target="_blank" rel="noopener noreferrer">${id==='sofe'?'Открыть полное приложение SOFE ↗':'Открыть исходный сайт или приложение ↗'}</a></p>`:'';
  return res.status(200).send(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f5f3ef"><meta name="robots" content="index,follow,max-image-preview:large"><title>${esc(title)}</title><meta name="description" content="${esc(desc)}"><link rel="canonical" href="${url}"><meta property="og:type" content="article"><meta property="og:site_name" content="OOOPS"><meta property="og:title" content="${esc(title)}"><meta property="og:description" content="${esc(desc)}"><meta property="og:url" content="${url}"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><script type="application/ld+json">${schema}</script><style>${style}</style></head><body>
 <nav><a class="brand" href="/">OOO<em>PS!</em></a><div class="navlinks"><a href="/#work">Портфолио</a><a href="/#contact">Обсудить проект ↗</a></div></nav>
 <main>
