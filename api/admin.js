@@ -54,6 +54,9 @@ for(const p of data.projects||[]){
  }
  const fallback=stories[p.id];
  if(fallback){p.story={...fallback,...(p.story||{})};}
+ if(p.id==='dvor'&&typeof p.story?.challenge==='string'&&p.story.challenge.startsWith('Сайту общественного или образовательного проекта важно')){
+   p.story={...p.story,headline:stories.dvor.headline,challenge:stories.dvor.challenge,approach:stories.dvor.approach,deliverables:stories.dvor.deliverables,impact:stories.dvor.impact,insight:stories.dvor.insight,kind:stories.dvor.kind,label:stories.dvor.label,liveUrl:stories.dvor.liveUrl};
+ }
  const labelMap={'Действующий цифровой проект':'Приложение / MVP','Рабочий образовательный инструмент':'EdTech / Платформа','Реализованный проект':'Веб-проект','Дизайн-портфолио':'Другие работы'};
  const kindMap={'Архив · Дизайн-концепт':'Дизайн-концепция','Архив · Графический дизайн':'Айдентика / Графика'};
  if(p.story?.label&&labelMap[p.story.label])p.story.label=labelMap[p.story.label];
