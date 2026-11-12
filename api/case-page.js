@@ -67,7 +67,7 @@ export default async function handler(req,res){
  const story={...built,...(p.story||{})};
  const headline=story.headline||p.description||'Визуальная история проекта';
  const sourceEmbed=source?portfolioResourceUrl(source):'';
- const localPdf=source?.localPdf||(source?.localParts?'/pdf-viewer.html?key='+encodeURIComponent(id):(['brics','espachicas'].includes(id)?'/pdf-viewer.html?key='+encodeURIComponent(id):''));
+ const localPdf=(source?.localPdf||source?.localParts||['brics','espachicas'].includes(id))?'/pdf-viewer.html?key='+encodeURIComponent(id):'';
  const localVideo=/^media\/[a-f0-9]{32}\.mp4$/.test(p.video||'')?asMedia(p.video):(source?.localVideo||'');
  const sourceLink=source?portfolioPageUrl(source):'';
  const challenge=story.challenge||p.details||p.description||'Исходная задача проекта.';
