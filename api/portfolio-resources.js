@@ -1,6 +1,6 @@
 // Publicly supplied OOOPS portfolio sources. No private student or admin data.
 export const portfolioResources = {
-  stankevich:{title:'Кружок Станкевича',category:'Сайт · дизайн',description:'Дизайн образовательного сайта',color:'#b4d6ef',fileId:'1mKu_jfvLNsOIY1wSai16EVEi5xoqj8uh',kind:'pdf'},
+  stankevich:{title:'Кружок Станкевича',category:'Сайт · дизайн',description:'Дизайн образовательного сайта',color:'#b4d6ef',fileId:'1mKu_jfvLNsOIY1wSai16EVEi5xoqj8uh',kind:'pdf',localParts:10},
   starostin:{title:'Старостин',category:'Сайт · дизайн',description:'Дизайн сайта, полная версия проекта',color:'#efe1c9',fileId:'1dbkSTDrS5E4oEQ5n-igg0BCBVbLVvwPk',kind:'pdf',localParts:6},
   artcorpus:{title:'АртКорпус',category:'Графический дизайн',description:'Визуальная система проекта',color:'#e4cbe5',fileId:'1fpTnCLM2d4vuI6G-r6brxhEEFlYCnBCG',kind:'pdf'},
   deepsweep:{title:'Deep Sweep Agency',category:'Дизайн · агентство',description:'Видеодемонстрация проекта агентства',color:'#d9d4ee',fileId:'1RZ_J9oxxzFUsY2Zl33TzLK-f1h-nq3z1',kind:'video',localVideo:'/assets/portfolio/deepsweep.mp4'},
