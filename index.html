@@ -575,7 +575,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
     const response=await fetch('/api/public-projects',{cache:'no-store'});if(!response.ok)throw Error('Проекты временно недоступны');
     const result=await response.json();if(!Array.isArray(result.projects)||!result.projects.length)throw Error('Проекты временно недоступны');
     root.replaceChildren();
-    const important=['alfa_credit','sofe','tutor','dvor','calendar'];
+    const important=['sofe','tutor','dvor','calendar'];
     const featured=important.map(id=>result.projects.find(p=>p.id===id)).filter(Boolean);
     const displayPriority=['alfa_credit','stankevich','artcorpus','starostin','muf','glasses','deepsweep','espachicas','interior','visuals','brics','academy'];
     const other=result.projects.filter(p=>!important.includes(p.id)).sort((a,b)=>{const ia=displayPriority.indexOf(a.id),ib=displayPriority.indexOf(b.id);return (ia<0?99:ia)-(ib<0?99:ib)});
@@ -589,8 +589,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       const route='/portfolio/'+encodeURIComponent(p.id);
       if(p.id==='calendar'){p.title='Just';p.description=(p.description||'Календарь и планирование')+' · Голосовой ввод';}
       let visual='';
-      if(p.id==='alfa_credit')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>АЛЬФА / РАБОЧИЙ ИНТЕРАКТИВНЫЙ ПРОТОТИП</span></div><iframe title="Оригинальное приложение Альфа — интерактивный прототип" loading="lazy" src="https://alpha-scenario-demo-web.onrender.com/" tabindex="-1"></iframe></div>';
-      else if(p.id==='tutor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>TIME LAB / DIGITAL CLASSROOM</span></div><iframe title="Настоящее приложение Time Lab" loading="lazy" src="https://time-lab-english.wintry-moss-6546.chatgpt.site/learn" tabindex="-1"></iframe></div>';
+      if(p.id==='tutor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>TIME LAB / DIGITAL CLASSROOM</span></div><iframe title="Настоящее приложение Time Lab" loading="lazy" src="https://time-lab-english.wintry-moss-6546.chatgpt.site/learn" tabindex="-1"></iframe></div>';
       else if(p.id==='calendar')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>CALENDAR / WEB APPLICATION</span></div><iframe title="Превью календаря" loading="lazy" src="https://just-calendar-livid.vercel.app/" tabindex="-1"></iframe></div>';
       else if(p.id==='dvor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>ДВОР.ДЕТИ / WEB</span></div><div class="case-real-preview">'+(p.video&&/^media\/[a-f0-9]{32}\.mp4$/.test(p.video)?'<video muted autoplay loop playsinline preload="metadata" style="display:block;width:100%;height:100%;object-fit:contain;background:#fff;border-radius:10px" src="/api/media?key='+encodeURIComponent(p.video)+'"></video>':coverImage(p))+'</div></div>';
       else if(p.id==='sofe')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>SOFE / LIVE APP · VERCEL</span></div><iframe title="Настоящее приложение SOFE на Vercel" loading="lazy" src="https://sofe-jade.vercel.app/" tabindex="-1"></iframe></div>';
