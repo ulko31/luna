@@ -94,6 +94,20 @@ function fallback(err){
  if(entry.source)document.getElementById('download').href=entry.source;
  try{
  binary=await loadBinary();
+ if(key==='stankevich'){
+   const objectUrl=URL.createObjectURL(new Blob([binary],{type:'application/pdf'}));
+   status.style.display='none';
+   pages.style.padding='0';
+   const frame=document.createElement('iframe');
+   frame.title='Кружок Станкевича — оригинальный PDF';
+   frame.style.cssText='border:0;width:100%;height:calc(100dvh - 85px);min-height:680px;background:white';
+   frame.src=objectUrl+'#view=FitH';
+   pages.appendChild(frame);
+   document.getElementById('minus').style.display='none';
+   document.getElementById('plus').style.display='none';
+   document.getElementById('zoomLabel').textContent='PDF';
+   return;
+ }
  const lib=document.createElement('script');lib.src='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
  await new Promise((resolve,reject)=>{lib.onload=resolve;lib.onerror=reject;document.head.appendChild(lib)});
  if(!window.pdfjsLib)throw Error('PDF library unavailable');
