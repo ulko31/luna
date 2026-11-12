@@ -1,8 +1,12 @@
 <!doctype html><html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OOOPS · Просмотр проекта</title><style>
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#f5f3ef;color:#24211f;font-family:system-ui,-apple-system,sans-serif}
 header{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:14px 22px;border-bottom:1px solid #e0dcd6;background:#fff;position:sticky;top:0;z-index:3;flex-wrap:wrap}h1{margin:0;font-size:15px;letter-spacing:-.02em}header span{font-size:12px;color:#7a7470}.toolbar{display:flex;align-items:center;gap:10px}.toolbar button{border:1px solid #d9d4ce;background:#fff;border-radius:8px;padding:6px 12px;cursor:pointer}.toolbar button:hover{background:#e4d4fa}#pages{padding:20px max(12px,3vw);display:flex;flex-direction:column;align-items:center;gap:16px}canvas{background:#fff;display:block;max-width:100%;height:auto;box-shadow:0 5px 20px #00000014}#status{padding:55px 20px;text-align:center;color:#6e6660}#fallback{display:none;padding:25px;margin:20px auto;max-width:700px;text-align:center;background:#fff;border-radius:12px}#fallback iframe{border:0;width:100%;height:70vh;background:#fff}a{color:inherit}button:disabled{opacity:.45;cursor:not-allowed}
+#pages .design-shell{position:relative;max-width:100%;line-height:0}#pages .design-shell canvas{box-shadow:0 5px 20px #00000014}
+#pages .demo-hotspot{position:absolute;z-index:2;display:block;background:transparent;border:1px solid transparent;border-radius:8px;cursor:pointer;transition:background .15s,border-color .15s}
+#pages .demo-hotspot:hover,#pages .demo-hotspot:focus-visible{background:#aa61eb28;border:1px solid #c660ecb0;outline:none}
+#interactivity{display:none;padding:7px 14px;background:#efe3fd;border-radius:9px;color:#6124b3;font-weight:700;font-size:12px}
 </style></head><body>
-<header><div><h1 id="name">OOOPS · Исходный дизайн</h1><span>Прокручивайте, чтобы посмотреть полный проект</span></div><div class="toolbar"><button id="minus" aria-label="Уменьшить масштаб">−</button><span id="zoomLabel">100%</span><button id="plus" aria-label="Увеличить масштаб">+</button></div></header>
+<header><div><h1 id="name">OOOPS · Исходный дизайн</h1><span>Прокручивайте, чтобы посмотреть полный проект</span><span id="interactivity">Интерактивный прототип · нажимайте кнопки и меню</span></div><div class="toolbar"><button id="minus" aria-label="Уменьшить масштаб">−</button><span id="zoomLabel">100%</span><button id="plus" aria-label="Увеличить масштаб">+</button></div></header>
 <div id="status" role="status">Загружаем оригинальный макет…</div><main id="pages"></main><div id="fallback">Не удалось открыть интерактивный просмотр.<div style="margin-top:18px"><a id="download" target="_blank" rel="noopener">Открыть исходный PDF</a></div><iframe id="native" title="PDF"></iframe></div>
 <script>
 const manifest={
@@ -32,11 +36,52 @@ async function render(){
    const ratio=Math.min(1.5,window.devicePixelRatio||1);
    canvas.width=Math.max(1,Math.floor(viewport.width*ratio));canvas.height=Math.max(1,Math.floor(viewport.height*ratio));
    canvas.style.width=Math.round(viewport.width)+'px';canvas.style.height=Math.round(viewport.height)+'px';
-   pages.appendChild(canvas);
+   let shell=null;
+   if(key==='stankevich' && num===1){
+     shell=document.createElement('div');
+     shell.className='design-shell';
+     shell.style.width=Math.round(viewport.width)+'px';
+     shell.style.height=Math.round(viewport.height)+'px';
+     shell.appendChild(canvas);
+     pages.appendChild(shell);
+   } else pages.appendChild(canvas);
    await page.render({canvasContext:ctx,viewport,transform:ratio===1?null:[ratio,0,0,ratio,0,0]}).promise;
+   if(shell)installInteractiveHotspots(shell,viewport.width,viewport.height);
  }
  status.style.display='none';document.getElementById('zoomLabel').textContent=Math.round(zoom*100)+'%';
 }
+
+// Interactive navigation is layered over the original design — no redraw of typography, images or layout.
+function installInteractiveHotspots(shell,width,height){
+  const sx=width/1200,sy=height/11635;
+  const hotspots=[
+    // Header navigation
+    {label:'Преподаватели',x:335,y:15,w:170,h:50,target:3300},
+    {label:'Платформа',x:510,y:15,w:160,h:50,target:1850},
+    {label:'Курсы',x:676,y:15,w:98,h:50,target:8300},
+    {label:'Отзывы',x:780,y:15,w:110,h:50,target:9400},
+    {label:'На главную',x:1055,y:12,w:130,h:53,target:0},
+    // Hero buttons
+    {label:'Узнать подробнее',x:340,y:330,w:188,h:53,target:1800},
+    {label:'Купить курс',x:545,y:330,w:160,h:53,target:8300},
+    {label:'Познакомиться с преподавателями',x:275,y:728,w:215,h:70,target:3300},
+    // Course cards
+    {label:'Открыть первый курс',x:180,y:8350,w:420,h:750,target:8350},
+    {label:'Открыть второй курс',x:610,y:8350,w:410,h:750,target:8350},
+    // Reviews and FAQ
+    {label:'Читать отзывы',x:350,y:9970,w:510,h:120,target:9400},
+    {label:'Часто задаваемые вопросы',x:170,y:10840,w:860,h:400,target:10800}
+  ];
+  hotspots.forEach(h=>{
+    const el=document.createElement('button');
+    el.type='button';el.className='demo-hotspot';el.title=h.label;el.setAttribute('aria-label',h.label);
+    Object.assign(el.style,{left:(h.x*sx)+'px',top:(h.y*sy)+'px',width:(h.w*sx)+'px',height:(h.h*sy)+'px'});
+    el.onclick=()=>window.scrollTo({top:shell.getBoundingClientRect().top+window.scrollY+h.target*sy-90,behavior:'smooth'});
+    shell.appendChild(el);
+  });
+  document.getElementById('interactivity').style.display='inline-block';
+}
+
 function fallback(err){
  status.style.display='none';const f=document.getElementById('fallback');f.style.display='block';
  console.warn('PDF preview unavailable',err);
