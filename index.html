@@ -433,7 +433,16 @@ footer{max-width:1480px;margin:auto}
 }
 @media(max-width:600px){#work .project-art{padding:12px 17px 18px!important}}
 </style>
-</head>
+<style>
+/* Text-first archive: originals belong inside projects, not cropped on the landing page. */
+#otherWorkSection .other-folder-card{display:flex!important;align-items:stretch;min-height:215px!important;background:var(--folder-bg,#e6e0f5)!important;transform:none!important;border-radius:15px;overflow:hidden;transition:transform .25s,box-shadow .25s}
+#otherWorkSection .other-folder-card:hover{transform:translateY(-7px)!important;box-shadow:0 18px 32px #16161620}
+#otherWorkSection .other-card-picture{display:none!important}
+#otherWorkSection .other-card-copy{display:flex!important;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:16px;padding:26px!important;min-height:215px!important;width:100%}
+#otherWorkSection .other-card-copy strong{font:800 clamp(25px,2.8vw,43px)/1.02 Manrope,sans-serif!important;letter-spacing:-.055em}
+#otherWorkSection .other-card-copy span{font-size:12px;font-weight:800;margin-top:auto}
+@media(max-width:650px){#otherWorkSection .other-folder-card,#otherWorkSection .other-card-copy{min-height:185px!important}}
+</style></head>
 <body>
 <nav aria-label="Главная навигация">
  <a href="#top" class="logo" aria-label="OOOPS! на главную">OOO<span class="dot">P</span>S!<small>digital<br>studio</small></a>
@@ -550,11 +559,11 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
   const media=s=>s?.startsWith('media/')?'/api/media?key='+encodeURIComponent(s):s;
   try{
     const response=await fetch('/api/public-projects',{cache:'no-store'});if(!response.ok)throw Error('Проекты временно недоступны');
-    const result=await response.json();if(!result.configured)throw Error('Сайт ещё не настроен');
+    const result=await response.json();if(!Array.isArray(result.projects)||!result.projects.length)throw Error('Проекты временно недоступны');
     root.replaceChildren();
     const important=['sofe','tutor','dvor','calendar'];
     const featured=important.map(id=>result.projects.find(p=>p.id===id)).filter(Boolean);
-    const displayPriority=['stankevich','starostin','artcorpus','espachicas','interior','visuals','brics','academy'];
+    const displayPriority=['stankevich','artcorpus','starostin','muf','glasses','deepsweep','espachicas','interior','visuals','brics','academy'];
     const other=result.projects.filter(p=>!important.includes(p.id)).sort((a,b)=>{const ia=displayPriority.indexOf(a.id),ib=displayPriority.indexOf(b.id);return (ia<0?99:ia)-(ib<0?99:ib)});
     const coverImage=p=>p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+' — материалы проекта">':'';
     featured.forEach((p,i)=>{
@@ -580,8 +589,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       const card=document.createElement('a');card.href=route;card.className='other-folder-card';
       card.style.setProperty('--folder-bg',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#ddd5ef');
       card.style.setProperty('--tilt',((i%5)-2)*1.8+'deg');
-      let display=p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'<div class="other-typographic">'+esc(p.title)+'</div>';
-      card.innerHTML='<div class="other-card-picture">'+display+'</div><div class="other-card-copy"><small>'+esc(p.category||'Дизайн')+'</small><strong>'+esc(p.title)+'</strong><span>Открыть работу ↗</span></div>';
+      card.innerHTML='<div class="other-card-copy"><small>'+esc(p.category||'Проект')+'</small><strong>'+esc(p.title)+'</strong><span>Смотреть проект ↗</span></div>';
       return card;
     };
     section.innerHTML='<div class="other-folder-head"><div><span class="folder-eyebrow">OOOPS! / MORE WORK</span><h3>Другие работы <span>✳</span></h3><p>Сайты, визуальные концепции и графические проекты. Листайте карточки и открывайте интересные работы.</p></div><div class="folder-buttons"><button type="button" class="folder-back" aria-label="Предыдущие работы">←</button><button type="button" class="folder-next" aria-label="Следующие работы">→</button></div></div><div class="other-folder-window"><div class="other-folder-track"></div></div><a class="view-all-projects" href="/work.html">Посмотреть все работы <span aria-hidden="true">↗</span></a>';
