@@ -42,6 +42,16 @@ if(!data.catalogV4){
  data.catalogV4=true;
 }
 for(const p of data.projects||[]){
+ if(p.id==='dvor'&&(!p.cover||p.cover==='/assets/cases/dvor.svg')){
+   p.cover='/assets/cases/dvor-real.jpg';p.coverFit='contain';p.posX=50;p.posY=50;p.zoom=100;
+   p.images=Array.isArray(p.images)?p.images:[];
+   if(!p.images.some(im=>im.url===p.cover))p.images.unshift({id:'dvor-original-site-capture',url:p.cover,caption:'Скриншот оригинального сайта «Двор.Дети»'});
+ }
+ if(p.id==='calendar'&&!p.cover){
+   p.cover='/assets/cases/calendar-real.jpg';p.coverFit='contain';p.posX=50;p.posY=50;p.zoom=100;
+   p.images=Array.isArray(p.images)?p.images:[];
+   if(!p.images.some(im=>im.url===p.cover))p.images.unshift({id:'calendar-original-site-capture',url:p.cover,caption:'Скриншот оригинального календаря'});
+ }
  const fallback=stories[p.id];
  if(fallback){p.story={...fallback,...(p.story||{})};}
  const labelMap={'Действующий цифровой проект':'Приложение / MVP','Рабочий образовательный инструмент':'EdTech / Платформа','Реализованный проект':'Веб-проект','Дизайн-портфолио':'Другие работы'};
