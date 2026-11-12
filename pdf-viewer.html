@@ -12,6 +12,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:15px;pa
 const manifest={
  stankevich:{parts:10,title:'Кружок Станкевича',source:'https://drive.google.com/file/d/1mKu_jfvLNsOIY1wSai16EVEi5xoqj8uh/view'},
  starostin:{parts:6,title:'Старостин',source:'https://drive.google.com/file/d/1dbkSTDrS5E4oEQ5n-igg0BCBVbLVvwPk/view'},
+ artcorpus:{url:'/assets/portfolio/artcorpus.pdf',title:'АртКорпус'},
  brics:{url:'/assets/portfolio/brics.pdf',title:'БРИКС'},
  espachicas:{url:'/assets/portfolio/espachicas.pdf',title:'Espachicas'}
 };
@@ -125,7 +126,7 @@ function fallback(err){
  if(entry.source)document.getElementById('download').href=entry.source;
  try{
  binary=await loadBinary();
- if(key==='stankevich'){
+ if(key==='stankevich'||key==='artcorpus'){
    // Original PDF rendered in-page by PDF.js, without the native PDF toolbar or page thumbnails.
    document.querySelector('header').style.display='none';
    document.getElementById('pages').style.padding='18px 8px 35px';
