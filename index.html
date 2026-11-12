@@ -554,8 +554,8 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
     root.replaceChildren();
     const important=['sofe','tutor','dvor','calendar'];
     const featured=important.map(id=>result.projects.find(p=>p.id===id)).filter(Boolean);
-    const displayPriority=['brics','interior','espachicas','stankevich','artcorpus','visuals'];
-    const other=result.projects.filter(p=>!important.includes(p.id)&&p.id!=='starostin').sort((a,b)=>{const ia=displayPriority.indexOf(a.id),ib=displayPriority.indexOf(b.id);return (ia<0?99:ia)-(ib<0?99:ib)});
+    const displayPriority=['stankevich','starostin','artcorpus','espachicas','interior','visuals','brics','academy'];
+    const other=result.projects.filter(p=>!important.includes(p.id)).sort((a,b)=>{const ia=displayPriority.indexOf(a.id),ib=displayPriority.indexOf(b.id);return (ia<0?99:ia)-(ib<0?99:ib)});
     const coverImage=p=>p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+' — материалы проекта">':'';
     featured.forEach((p,i)=>{
       const article=document.createElement('article'),st=p.story||{};
@@ -564,6 +564,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       article.style.setProperty('--stack',i);
       article.style.setProperty('--case-accent',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#d8bafa');
       const route='/portfolio/'+encodeURIComponent(p.id);
+      if(p.id==='calendar'){p.title='Just';p.description=(p.description||'Календарь и планирование')+' · Голосовой ввод';}
       let visual='';
       if(p.id==='tutor')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>TIME LAB / DIGITAL CLASSROOM</span></div><iframe title="Интерфейс Time Lab" loading="lazy" src="https://time-lab-english.wintry-moss-6546.chatgpt.site/learn" tabindex="-1"></iframe></div>';
       else if(p.id==='calendar')visual='<div class="case-portal"><div class="case-chrome"><i></i><i></i><i></i><span>CALENDAR / WEB APPLICATION</span></div><iframe title="Превью календаря" loading="lazy" src="https://just-calendar-livid.vercel.app/" tabindex="-1"></iframe></div>';
@@ -579,8 +580,7 @@ const processStage=document.querySelector('.process-stage');if(processStage&&'In
       const card=document.createElement('a');card.href=route;card.className='other-folder-card';
       card.style.setProperty('--folder-bg',/^#[0-9a-f]{6}$/i.test(p.color||'')?p.color:'#ddd5ef');
       card.style.setProperty('--tilt',((i%5)-2)*1.8+'deg');
-      const pdf=typeof st.sourcePdf==='string'&&st.sourcePdf.startsWith('/assets/portfolio/')&&st.sourcePdf.endsWith('.pdf')?st.sourcePdf:'';
-      let display=pdf?'<iframe title="Оригинальный дизайн '+esc(p.title)+'" loading="lazy" tabindex="-1" src="'+esc(pdf)+'#view=FitH&toolbar=0&navpanes=0"></iframe>':(p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'<div class="other-typographic">'+esc(p.title)+'</div>');
+      let display=p.cover?'<img loading="lazy" src="'+esc(media(p.cover))+'" alt="'+esc(p.title)+'">':'<div class="other-typographic">'+esc(p.title)+'</div>';
       card.innerHTML='<div class="other-card-picture">'+display+'</div><div class="other-card-copy"><small>'+esc(p.category||'Дизайн')+'</small><strong>'+esc(p.title)+'</strong><span>Открыть работу ↗</span></div>';
       return card;
     };
