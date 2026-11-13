@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {extractPosts,assess,renderDigest} from './digest.mjs';
 const now=new Date('2026-11-14T06:17:00Z');
-const sample={id:'GetClient/111',source:'GetClient',url:'https://t.me/GetClient/111',date:new Date('2026-11-14T05:00:00Z'),text:'Ищем исполнителя для автоматизации обработки заявок, CRM API и Telegram-бота. Проектная работа, бюджет 35 000 руб. Пишите в личку.'};
+const sample={id:'GetClient/111',source:'GetClient',url:'https://t.me/GetClient/111',date:new Date('2026-11-14T05:00:00Z'),text:'Ищем исполнителя для разработки сайта и автоматизации обработки заявок, CRM API и Telegram-бота. Проектная работа, бюджет 35 000 руб. Пишите в личку.'};
 test('detects development and automation requests',()=>{
  const x=assess(sample,now); assert.ok(x);
  assert.ok(x.categories.some(n=>n.includes('Автоматизация')));
