@@ -1,0 +1,9 @@
+{
+  "name": "ooops-jobs",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Daily curated Telegram freelance digest for OOOPS",
+  "engines": {"node": ">=20"},
+  "scripts": {"start": "node digest.mjs", "test": "node --test tests.mjs"}
+}
