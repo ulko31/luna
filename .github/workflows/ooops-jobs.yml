@@ -4,6 +4,14 @@ on:
   schedule:
     - cron: '17 6 * * *' # 09:17 Moscow time (UTC+3)
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'discover = show group IDs; send = publish digest'
+        type: choice
+        options:
+          - send
+          - discover
+        default: send
 
 permissions:
   contents: read
@@ -26,7 +34,14 @@ jobs:
       - name: Test categorizer
         working-directory: jobs-bot
         run: npm test
+      - name: Discover Telegram group ID (no messages sent)
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'discover'
+        working-directory: jobs-bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
+        run: node discover-chat.mjs
       - name: Send curated daily jobs to OOOPS group
+        if: github.event_name == 'schedule' || inputs.mode != 'discover'
         working-directory: jobs-bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
