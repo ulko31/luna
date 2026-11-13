@@ -45,6 +45,27 @@
 Токен даёт контроль над ботом. Он должен быть только в GitHub Actions secrets.
 Если токен случайно утечёт, его можно перевыпустить в BotFather.
 
+## Отправка в конкретную тему Telegram
+
+Если бот отправляет дайджест в общую тему, можно направить его
+в тему **«клиенты и переговоры»** без изменения общего ID группы.
+
+1. Откройте именно тему «клиенты и переговоры» в группе OOOPS.
+2. Отправьте команду `/chatid@ooops_new_order_bot` **без пробелов**
+   (после /chatid укажите username вашего созданного бота).
+3. GitHub → Actions → OOOPS Jobs → Run workflow → **mode: discover**.
+   В логах шага Discover найдите строку `topic: group=-100… | thread=123`.
+   Сверьте `group` с уже настроенным значением `OOOPS_JOBS_CHAT_ID`.
+4. GitHub → Settings → Secrets and variables → Actions → New repository secret:
+   имя `OOOPS_JOBS_THREAD_ID`, значение — **только число после thread=**.
+5. Запустите **mode: send**. Дайджест должен появиться внутри выбранной темы.
+
+Если в логах только `No topic thread found yet`, проверьте, что команда
+отправлена **внутри темы** и адресована боту; затем повторите discover.
+
+Секрет `OOOPS_JOBS_THREAD_ID` необязателен: без него сообщение
+продолжит приходить в общую тему. Не меняйте уже работающие токен и chat ID.
+
 ## Источники и отбор
 По умолчанию:
 `zakaz_design, GetClient, FreeVacanciesIT, frilans, Koteyka_Freelancer,
