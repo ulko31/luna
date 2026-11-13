@@ -96,7 +96,7 @@ async function sendToTelegram(message){
   const token=process.env.TELEGRAM_BOT_TOKEN,chat_id=process.env.TELEGRAM_CHAT_ID;
   if(!token||!chat_id)throw new Error('Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in repository Actions secrets');
   const threadRaw=process.env.TELEGRAM_THREAD_ID?.trim();
-  if(threadRaw && !/^[1-9]\\d*$/.test(threadRaw))throw new Error('TELEGRAM_THREAD_ID must be a positive numeric Telegram topic ID');
+  if(threadRaw && !/^[1-9]\d*$/.test(threadRaw))throw new Error('TELEGRAM_THREAD_ID must be a positive numeric Telegram topic ID');
   const payload={chat_id,text:message,parse_mode:'HTML',disable_web_page_preview:true};
   if(threadRaw)payload.message_thread_id=Number(threadRaw);
   const res=await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{
