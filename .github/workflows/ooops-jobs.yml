@@ -6,11 +6,12 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'discover = show group IDs; send = publish digest'
+        description: 'preview = dry run; discover = show group IDs; send = publish digest'
         type: choice
         options:
           - send
           - discover
+          - preview
         default: send
 
 permissions:
@@ -40,8 +41,14 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
         run: node discover-chat.mjs
+      - name: Preview matches without Telegram access
+        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'preview'
+        working-directory: jobs-bot
+        env:
+          DRY_RUN: '1'
+        run: node digest.mjs
       - name: Send curated daily jobs to OOOPS group
-        if: github.event_name == 'schedule' || inputs.mode != 'discover'
+        if: github.event_name == 'schedule' || inputs.mode == 'send'
         working-directory: jobs-bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
