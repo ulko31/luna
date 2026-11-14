@@ -3,7 +3,7 @@
 const CHANNELS = [
   'zakaz_design','GetClient','FreeVacanciesIT','frilans',
   'Koteyka_Freelancer','vacancysmm','designer_jobs','uxui_jobs',
-  'jobgeeks','fordev','python_jobs'
+  'jobgeeks','fordev','python_jobs','dprofilefreelance'
 ];
 const CATEGORIES = [
   {name:'Автоматизация / интеграции',weight:6,rx:/автоматизац|интеграц|api\b|crm\b|workflow|n8n|make\.com|zapier|парсинг|парсер|скрипт|бота?\b|bot\b|webhook|рутинн|процесс[а-я]* бизнес/i},
@@ -43,14 +43,24 @@ export function extractPosts(html,channel) {
     const text=raw?cleanHtml(raw):'';
     if(!text || text.length<35 || seen.has(id))continue;
     seen.add(id);
-    posts.push({id,source:channel,date:time?new Date(time):null,text,url:'https://t.me/'+id});
+    // Official Dprofile orders channel: prefer the original public job page
+    // over a Telegram repost when it contains an explicit Dprofile job link.
+    const links=[...block.matchAll(/href=["'](https:\/\/(?:www\.)?dprofile\.ru\/job\/\d+\/[a-zA-Z0-9-]+)[^"']*["']/gi)]
+      .map(match=>match[1]);
+    const directJob=channel==='dprofilefreelance'?links[0]:null;
+    posts.push({id,source:channel,date:time?new Date(time):null,text,
+      url:directJob||'https://t.me/'+id});
   }
   return posts;
 }
 export function assess(post,now=new Date()) {
   const text=post.text.replace(/\s+/g,' ').slice(0,5000);
   if (NEGATIVE.test(text) || FULLTIME.test(text) || RISKY.test(text)) return null;
-  if (!POSITIVE.test(text)) return null;
+  // Dprofile's editorial posts can be titled as briefs rather than "Ищем...".
+  // Only relax the wording requirement for a verified-looking direct job link
+  // from the official orders channel; all category and exclusion checks stay.
+  const directDprofile=post.source==='dprofilefreelance'&&/^https:\/\/(?:www\.)?dprofile\.ru\/job\/\d+\//.test(post.url);
+  if (!POSITIVE.test(text) && !directDprofile) return null;
   const categories=CATEGORIES.filter(c=>c.rx.test(text));
   if (!categories.length)return null;
   const age=post.date?(now-post.date)/3600000:null;
