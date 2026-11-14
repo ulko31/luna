@@ -1,6 +1,11 @@
 name: OOOPS Jobs — ежедневные заказы
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'jobs-bot/**'
+      - '.github/workflows/ooops-jobs.yml'
   schedule:
     - cron: '17 6 * * *' # 09:17 Moscow time (UTC+3)
   workflow_dispatch:
@@ -42,7 +47,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
         run: node discover-chat.mjs
       - name: Preview matches without Telegram access
-        if: github.event_name == 'workflow_dispatch' && inputs.mode == 'preview'
+        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'preview')
         working-directory: jobs-bot
         env:
           DRY_RUN: '1'
