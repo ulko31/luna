@@ -28,3 +28,16 @@ test('creates safe Telegram HTML and original deep links',()=>{
  assert.match(message,/https:\/\/t\.me\/GetClient\/111/);
  assert.match(message,/Автоматизация/);
 });
+
+test('Dprofile official channel passes through direct job links',()=>{
+ const html='<div class="tgme_widget_message text_not_supported_wrap" data-post="dprofilefreelance/9999">'+
+ '<div class="tgme_widget_message_text js-message_text">UX/UI дизайнер — обновление интерфейсов. <a href="https://dprofile.ru/job/1702/ux-audit">Откликнуться</a></div>'+
+ '<time datetime="2026-11-14T04:00:00+00:00">04:00</time></div>';
+ const found=extractPosts(html,'dprofilefreelance');
+ assert.equal(found.length,1);
+ assert.equal(found[0].url,'https://dprofile.ru/job/1702/ux-audit');
+ const picked=assess(found[0],now);
+ assert.ok(picked);
+ assert.ok(picked.categories.some(c=>c.includes('UX/UI')));
+ assert.match(renderDigest([picked],now),/dprofile\.ru\/job\/1702/);
+});
