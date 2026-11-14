@@ -68,7 +68,8 @@ export function assess(post,now=new Date()) {
   const scores=categories.reduce((a,c)=>a+c.weight,0);
   const boost=(/бюджет|₽|руб|\$|оплат/i.test(text)?2:0)+(/на проект|проектн|разов|фриланс|удал[её]н/i.test(text)?2:0);
   const score=Math.min(20,scores+boost);
-  if(score<5)return null;
+  // A single UX/UI (weight 4) Dprofile brief is valid when linked to a real job page.
+  if(score<(directDprofile?4:5))return null;
   const budget=text.match(/(?:бюджет|оплата|стоимость)\s*[:—-]?\s*([^\n.!]{3,65})/i)?.[1]?.trim()||'не указан';
   const summary=text.split(/\n|[.!?](?=\s)/).map(x=>x.trim()).filter(x=>x.length>20)[0]||text;
   return {...post,categories:categories.map(c=>c.name),score,budget:budget.slice(0,70),summary:summary.slice(0,190)};
