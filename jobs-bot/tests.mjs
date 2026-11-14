@@ -41,3 +41,10 @@ test('Dprofile official channel passes through direct job links',()=>{
  assert.ok(picked.categories.some(c=>c.includes('UX/UI')));
  assert.match(renderDigest([picked],now),/dprofile\.ru\/job\/1702/);
 });
+
+test('unavailable Dprofile source produces a clear digest warning',()=>{
+ const notice='Источник Dprofile временно недоступен боту. Остальные каналы проверены независимо.';
+ const digest=renderDigest([assess(sample,now)],now,notice);
+ assert.match(digest,/Dprofile временно недоступен/);
+ assert.match(digest,/GetClient\/111/);
+});
