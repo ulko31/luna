@@ -91,16 +91,21 @@ export function renderDigest(posts,now=new Date()) {
 }
 async function fetchPosts(channel) {
   const url='https://t.me/s/'+channel;
+  // Surface source health instead of silently treating a blocked source as no jobs.
   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),14000);
   try{
     const res=await fetch(url,{signal:ac.signal,headers:{'User-Agent':'Mozilla/5.0 (compatible; OOOPSJobs/1.0)'}});
     if(!res.ok)throw new Error('HTTP '+res.status);
     const html=await res.text();
+    if(!html.includes('tgme_widget_message'))throw new Error('No Telegram message markup (source may be blocked or empty)');
     const posts=extractPosts(html,channel);
-    process.stderr.write(channel+': '+posts.length+' public messages\n');
-    return posts;
-  }catch(e){process.stderr.write(channel+': '+e.message+'\n');return []}
-  finally{clearTimeout(timer)}
+    process.stderr.write('[source] '+channel+': '+posts.length+' public messages; '+(posts.length?'OK':'EMPTY')+'\n');
+    return {channel,status:posts.length?'ok':'empty',posts};
+  }catch(e){
+    const reason=e.name==='AbortError'?'timeout':e.message;
+    process.stderr.write('[source] '+channel+': UNAVAILABLE ('+reason+')\n');
+    return {channel,status:'unavailable',reason,posts:[]};
+  }finally{clearTimeout(timer)}
 }
 async function sendToTelegram(message){
   const token=process.env.TELEGRAM_BOT_TOKEN,chat_id=process.env.TELEGRAM_CHAT_ID;
@@ -119,10 +124,17 @@ async function sendToTelegram(message){
 async function main(){
   const now=new Date();
   const channels=(process.env.CHANNELS||CHANNELS.join(',')).split(',').map(x=>x.trim().replace(/^@/,'')).filter(x=>/^[A-Za-z0-9_]{5,32}$/.test(x));
-  const groups=await Promise.all(channels.map(fetchPosts));
-  const unique=new Map(groups.flat().map(p=>[p.id,p]));
+  const sources=await Promise.all(channels.map(fetchPosts));
+  const unique=new Map(sources.flatMap(source=>source.posts).map(p=>[p.id,p]));
   const candidates=[...unique.values()].map(p=>assess(p,now)).filter(Boolean)
     .sort((a,b)=>b.score-a.score||(b.date||0)-(a.date||0));
+  const sourceSummary=sources.map(x=>x.channel+': '+x.status+' ('+x.posts.length+')').join(' | ');
+  process.stderr.write('[sources] '+sourceSummary+'\n');
+  const dprofileSource=sources.find(x=>x.channel==='dprofilefreelance');
+  if(dprofileSource && dprofileSource.status!=='ok'){
+    process.stderr.write('[warning] Dprofile feed '+dprofileSource.status+'; this does not mean Dprofile.ru is down.\n');
+  }
+  if(candidates.length===0)process.stderr.write('[warning] No matched posts. Check per-source status, freshness window and job filters.\n');
   // Cap repetitive categories to keep the feed diverse.
   const selected=[],counts=new Map();
   for(const p of candidates){
