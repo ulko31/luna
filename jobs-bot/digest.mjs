@@ -74,10 +74,11 @@ export function assess(post,now=new Date()) {
   return {...post,categories:categories.map(c=>c.name),score,budget:budget.slice(0,70),summary:summary.slice(0,190)};
 }
 function escapeHtml(s) {return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-export function renderDigest(posts,now=new Date()) {
+export function renderDigest(posts,now=new Date(),sourceNotice='') {
   const date=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Moscow'}).format(now);
   let text='<b>OOOPS Jobs · '+escapeHtml(date)+'</b>\n';
   text+='Подборка заказов по всем направлениям студии. Откликаться только после проверки условий.\n\n';
+  if(sourceNotice)text+='⚠️ '+escapeHtml(sourceNotice)+'\n\n';
   if(!posts.length)return text+'Подходящих свежих объявлений не нашлось. Проверьте источники вручную.';
   for(let i=0;i<posts.length;i++){
     const p=posts[i];
@@ -143,7 +144,12 @@ async function main(){
     selected.push(p);counts.set(cat,n+1);
     if(selected.length>=8)break;
   }
-  const digest=renderDigest(selected,now);
+  const sourceNotice=dprofileSource?.status==='unavailable'
+    ?'Источник Dprofile временно недоступен боту. Остальные каналы проверены независимо.'
+    :dprofileSource?.status==='empty'
+    ?'Из канала Dprofile не удалось извлечь объявления. Сайт Dprofile может при этом работать.'
+    :'';
+  const digest=renderDigest(selected,now,sourceNotice);
   if(process.env.DRY_RUN==='1'){console.log(digest);return}
   await sendToTelegram(digest);
   console.log('Sent '+selected.length+' public job postings to the configured Telegram chat');
