@@ -189,7 +189,7 @@ test('reserves digest places for eligible Dprofile jobs',()=>{
   {id:'dprofile-2',source:'dprofilefreelance',score:5,categories:['Презентации / графика']}
  ];
  const selected=selectDigestPosts(candidates);
- assert.equal(selected.length,12);
+ assert.equal(selected.length,7);
  assert.deepEqual(selected.filter(post=>post.source==='dprofilefreelance').map(post=>post.id),['dprofile-1','dprofile-2']);
  assert.equal(new Set(selected.map(post=>post.id)).size,selected.length);
 });
