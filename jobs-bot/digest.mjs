@@ -94,9 +94,9 @@ export function assess(post,now=new Date()) {
   const score=Math.min(20,scores+boost);
   if(score<(directDprofile?4:5))return null;
   const budgetText=text.replace(/(?<=\d)\.(?=\d{3}(?:\D|$))/g,' ');
-  const budgetRaw=budgetText.match(/(?:^|[\s,.;(])(?:бюджет|оплата|стоимость|доход|ставка|зарплата)(?=$|[\s:—-])\s*[:—-]?\s*([^\n!]{3,65})/iu)?.[1]
-    ?.replace(/^[^\d₽$€]+(?=\d)/,'').trim();
-  const budget=budgetRaw&&/(?:\d|₽|руб|\$|€|договор)/i.test(budgetRaw)?budgetRaw:'не указан';
+  const budgetRaw=budgetText.match(/(?:^|[\s,.;(])(?:бюджет|оплата|стоимость|доход|ставка|зарплата)(?=$|[\s:—-])\s*[:—-]?\s*([^\n.!]{3,90})/iu)?.[1]?.trim();
+  const money=budgetRaw?.match(/(?:от\s+)?\d[\d\s]*(?:[.,]\d+)?(?:\s*[–—-]\s*\d[\d\s]*(?:[.,]\d+)?)?\s*(?:₽|руб(?:\.|лей|ля)?|\$|€|тыс(?:\.|яч)?(?:\s*₽)?)/iu)?.[0]?.trim();
+  const budget=money||(budgetRaw&&/договор/iu.test(budgetRaw)?'договорная':'не указан');
   const summary=text.split(/\n|[.!?](?=\s)/).map(x=>x.trim()).filter(x=>x.length>20)[0]||text;
   return {...post,categories:categories.map(c=>c.name),score,budget:budget.slice(0,70),summary:summary.slice(0,190)};
 }
