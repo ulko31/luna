@@ -85,6 +85,27 @@ test('treats advertising manager roles as content and promotion',()=>{
  assert.match(post.budget,/50 000/);
 });
 
+test('treats a Tilda build as website development',()=>{
+ const post=assess({...sample,text:'#вебдизайнер Нужно сделать сайт на Tilda. Проектная работа, бюджет 45 000 руб.'},now);
+ assert.equal(post.categories[0],'Разработка / сайты');
+ assert.match(buildReplyDraft(post),/разработке сайта или сервиса/);
+});
+
+test('does not turn an art director role into a presentation reply',()=>{
+ const post=assess({...sample,text:'#артдиректор Ищем арт-директора: концепты сайтов и сервисов, контроль дизайна, ревью и клиентские презентации. Проектная удалённая работа, бюджет 90 000 руб.'},now);
+ assert.equal(post.categories[0],'Разработка / сайты');
+ assert.doesNotMatch(buildReplyDraft(post),/дизайну презентации/);
+});
+
+test('normalizes dot-separated thousands in salary',()=>{
+ const post=assess({...sample,text:'Требуется графический дизайнер. Удалённо, проектная работа. Зарплата: 70.000–85.000₽.'},now);
+ assert.match(post.budget,/70 000–85 000₽/);
+});
+
+test('rejects enthusiasm-only projects',()=>{
+ assert.equal(assess({...sample,text:'Ищем графического дизайнера, проект развивается на энтузиазме. Нужны баннеры и карточки.'},now),null);
+});
+
 test('uses copy and source buttons when direct Telegram contact is missing',()=>{
  const post=assess({...sample,contact:null},now);
  const keyboard=buildReplyButtons([post]);
