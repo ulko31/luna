@@ -106,6 +106,19 @@ test('rejects enthusiasm-only projects',()=>{
  assert.equal(assess({...sample,text:'Ищем графического дизайнера, проект развивается на энтузиазме. Нужны баннеры и карточки.'},now),null);
 });
 
+test('recognizes Russian adjective endings in graphic designer roles',()=>{
+ const post=assess({...sample,text:'Вакансия: Графический дизайнер / SMM-менеджер. Ищем визуального дизайнера для соцсетей. Иногда нужна разработка сайта. Оплата 50 000 руб.'},now);
+ assert.equal(post.categories[0],'Презентации / графика');
+});
+
+test('rejects disguised creator lead-generation ads',()=>{
+ assert.equal(assess({...sample,text:'ИЩУ экспертов, бренды и блогеров, которые хотят увеличить продажи с помощью ИИ контента. Я Оля, AI-креатор и маркетолог.'},now),null);
+});
+
+test('rejects marketplace lead-magnet ads',()=>{
+ assert.equal(assess({...sample,text:'Вы работаете с WB или Ozon и не знаете где искать заказы? Забирайте бесплатный лид-магнит и подпишитесь на бота автоматизации.'},now),null);
+});
+
 test('uses copy and source buttons when direct Telegram contact is missing',()=>{
  const post=assess({...sample,contact:null},now);
  const keyboard=buildReplyButtons([post]);
