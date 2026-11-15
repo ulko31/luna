@@ -5,7 +5,7 @@ const CHANNELS = [
   'Koteyka_Freelancer','vacancysmm','designer_jobs','uxui_jobs',
   'jobgeeks','fordev','python_jobs','dprofilefreelance'
 ];
-const PORTFOLIO_URL='https://ooops.agency/';
+const PORTFOLIO_URL='https://ooops-portfolio.vercel.app/';
 const CATEGORIES = [
   {name:'Автоматизация / интеграции',weight:6,rx:/автоматизац|интеграц|api\b|crm\b|workflow|n8n|make\.com|zapier|парсинг|парсер|скрипт|бота?\b|bot\b|webhook|рутинн|процесс[а-я]* бизнес/i},
   {name:'Разработка / сайты',weight:5,rx:/разработ|frontend|backend|fullstack|фронтенд|бэкенд|вёрстк|верстк|лендинг|landing|сайт|веб.?сервис|web.app|react|next\.js|node\.js|python|javascript|typescript|telegram mini|mini app|mvp\b/i},
