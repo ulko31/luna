@@ -43,7 +43,7 @@ test('extracts Telegram mentions and email fallback',()=>{
 test('creates safe Telegram HTML and original deep links',()=>{
  const message=renderDigest([assess(sample,now)],now);
  assert.match(message,/https:\/\/t\.me\/GetClient\/111/);
- assert.match(message,/Автоматизация/);
+ assert.match(message,/Разработка \/ сайты/);
  assert.match(message,/Отправка всегда вручную/);
 });
 
@@ -51,11 +51,21 @@ test('builds a short personalized reply and Telegram deep link',()=>{
  const post=assess(sample,now);
  const draft=buildReplyDraft(post);
  assert.ok(draft.length<=256);
- assert.match(draft,/digital-студия OOOPS/);
- assert.match(draft,/ooops-portfolio\.vercel\.app/);
+ assert.match(draft,/разработке сайта или сервиса/);
+ assert.match(draft,/Задача ещё актуальна/);
+ assert.match(draft,/ooops\.agency/);
  const keyboard=buildReplyButtons([post]);
  assert.match(keyboard.inline_keyboard[0][0].url,/https:\/\/t\.me\/clientname\?text=/);
  assert.equal(keyboard.inline_keyboard[0][1].copy_text.text,draft);
+});
+
+test('prioritizes a card-design hashtag over unrelated automation wording',()=>{
+ const post=assess({...sample,text:'#дизайнеркарточек Ищут специалиста по визуалу карточек товара. В компании также внедряют автоматизацию процессов. Проектная работа, бюджет 30 000 руб.'},now);
+ assert.equal(post.categories[0],'Презентации / графика');
+ const draft=buildReplyDraft(post);
+ assert.match(draft,/запрос по дизайну карточек/);
+ assert.match(draft,/визуальную систему/);
+ assert.doesNotMatch(draft,/запрос по автоматизации/);
 });
 
 test('uses copy and source buttons when direct Telegram contact is missing',()=>{

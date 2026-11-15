@@ -5,12 +5,12 @@ const CHANNELS = [
   'Koteyka_Freelancer','vacancysmm','designer_jobs','uxui_jobs',
   'jobgeeks','fordev','python_jobs','dprofilefreelance'
 ];
-const PORTFOLIO_URL='https://ooops-portfolio.vercel.app/';
+const PORTFOLIO_URL='https://ooops.agency/';
 const CATEGORIES = [
   {name:'Автоматизация / интеграции',weight:6,rx:/автоматизац|интеграц|api\b|crm\b|workflow|n8n|make\.com|zapier|парсинг|парсер|скрипт|бота?\b|bot\b|webhook|рутинн|процесс[а-я]* бизнес/i},
   {name:'Разработка / сайты',weight:5,rx:/разработ|frontend|backend|fullstack|фронтенд|бэкенд|вёрстк|верстк|лендинг|landing|сайт|веб.?сервис|web.app|react|next\.js|node\.js|python|javascript|typescript|telegram mini|mini app|mvp\b/i},
   {name:'UX/UI и исследование',weight:4,rx:/ux\b|ui\b|figma|прототип|дизайн интерфейс|исследовани[яе] пользовател|юзабилити|user.?flow|пользовательск.*сценари|ai.?сервис/i},
-  {name:'Презентации / графика',weight:4,rx:/презентаци|powerpoint|google slides|питч.?дек|инфографик|баннер|креатив|графическ.*дизайн|иллюстрац/i},
+  {name:'Презентации / графика',weight:4,rx:/презентаци|powerpoint|google slides|питч.?дек|инфографик|баннер|креатив|графическ.*дизайн|дизайн\w*.*карточ|дизайнер\w*.*карточ|карточ\w*.*(?:товар|маркетплейс)|иллюстрац/i},
   {name:'Брендинг / айдентика',weight:3,rx:/брендинг|айдентик|фирменн.*стил|логотип|визуальн.*стил|упаковк/i},
   {name:'Контент / SMM / видео',weight:3,rx:/smm\b|соцсет|контент|reels|монтаж|видео|анимаци|motion|рилс|съёмк|съемк/i},
   {name:'Данные / аналитика',weight:3,rx:/аналитик|дашборд|dashboard|sql\b|данных|data analyst|визуализац.*данн/i}
@@ -70,7 +70,13 @@ export function assess(post,now=new Date()) {
   if (NEGATIVE.test(text) || FULLTIME.test(text) || RISKY.test(text)) return null;
   const directDprofile=post.source==='dprofilefreelance'&&/^https:\/\/(?:www\.)?dprofile\.ru\/job\/\d+\//.test(post.url);
   if (!POSITIVE.test(text) && !directDprofile) return null;
-  const categories=CATEGORIES.filter(c=>c.rx.test(text));
+  const matched=CATEGORIES.filter(c=>c.rx.test(text));
+  const lead=text.slice(0,700);
+  const primary=[...matched].sort((a,b)=>{
+    const ai=lead.search(a.rx),bi=lead.search(b.rx);
+    return (ai<0?9999:ai)-(bi<0?9999:bi)||b.weight-a.weight;
+  })[0];
+  const categories=primary?[primary,...matched.filter(c=>c!==primary)]:[];
   if (!categories.length)return null;
   const age=post.date?(now-post.date)/3600000:null;
   if(age!==null&&(age>48||age< -2))return null;
@@ -86,11 +92,33 @@ export function assess(post,now=new Date()) {
 function escapeHtml(s) {return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 export function buildReplyDraft(post) {
-  const category=post.categories?.[0]||'digital-задаче';
-  const summary=String(post.summary||post.text||'').replace(/\s+/g,' ').trim().slice(0,46);
-  const intro=summary?'Увидели ваш запрос: «'+summary+(summary.length===46?'…':'')+'». ':'Увидели ваш запрос. ';
-  const draft='Здравствуйте! '+intro+'Мы — digital-студия OOOPS, работаем с направлением «'+category+'». Можем уточнить задачу и предложить решение. Портфолио: '+PORTFOLIO_URL;
-  return draft.length<=256?draft:draft.slice(0,252)+'…';
+  const text=String(post.summary||post.text||'').replace(/\s+/g,' ').trim();
+  const category=post.categories?.[0]||'';
+  let task='вашей задаче',solution='уточнить детали и предложить подходящее решение';
+  if(/карточ/i.test(text)){
+    task='дизайну карточек';
+    solution='продумать визуальную систему и собрать карточки в едином стиле';
+  }else if(/презентаци|питч.?дек|powerpoint|google slides/i.test(text)){
+    task='дизайну презентации';solution='выстроить структуру и оформить понятную визуальную подачу';
+  }else if(category==='Презентации / графика'){
+    task='графическому дизайну';solution='разработать визуальную систему и подготовить нужные материалы';
+  }else if(category==='Брендинг / айдентика'){
+    task='брендингу';solution='собрать целостную айдентику под продукт и аудиторию';
+  }else if(category==='UX/UI и исследование'){
+    task='UX/UI-дизайну';solution='проработать пользовательский путь и собрать интерфейс в Figma';
+  }else if(category==='Разработка / сайты'){
+    task='разработке сайта или сервиса';solution='спроектировать решение и довести его до работающего запуска';
+  }else if(category==='Автоматизация / интеграции'){
+    task='автоматизации';solution='разобрать процесс и собрать рабочую автоматизацию';
+  }else if(category==='Контент / SMM / видео'){
+    task='контенту и продвижению';solution='собрать понятную концепцию и подготовить материалы';
+  }else if(category==='Данные / аналитика'){
+    task='аналитике';solution='разобрать данные и подготовить понятный результат';
+  }
+  const draft='Здравствуйте! Увидели ваш запрос по '+task+'. Можем подключиться: '+solution+'. Подскажите, задача ещё актуальна? Если да, уточним объём и предложим сроки и стоимость. Работы: '+PORTFOLIO_URL;
+  if(draft.length<=256)return draft;
+  const compact='Здравствуйте! Увидели ваш запрос по '+task+'. Можем подключиться: '+solution+'. Задача ещё актуальна? Уточним объём, сроки и стоимость. Работы: '+PORTFOLIO_URL;
+  return compact.length<=256?compact:compact.slice(0,252).replace(/\s+\S*$/,'')+'…';
 }
 
 export function buildReplyButtons(posts) {
@@ -166,6 +194,7 @@ async function sendToTelegram(message,replyMarkup=null){
   });
   const body=await res.json();
   if(!res.ok||!body.ok)throw Error('Telegram sendMessage failed: '+JSON.stringify(body).slice(0,250));
+  return body.result?.message_id;
 }
 
 async function main(){
@@ -205,7 +234,8 @@ async function main(){
   }
   for(let i=0;i<batches.length;i++){
     const batch=batches[i],notice=i===0?sourceNotice:'';
-    await sendToTelegram(renderDigest(batch,now,notice),buildReplyButtons(batch));
+    const messageId=await sendToTelegram(renderDigest(batch,now,notice),buildReplyButtons(batch));
+    console.log('Telegram message '+(i+1)+'/'+batches.length+' ID: '+messageId);
   }
   console.log('Sent '+selected.length+' public job postings in '+batches.length+' Telegram message(s) with reply drafts');
 }
