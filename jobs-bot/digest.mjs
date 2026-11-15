@@ -5,6 +5,7 @@ const CHANNELS = [
   'Koteyka_Freelancer','vacancysmm','designer_jobs','uxui_jobs',
   'jobgeeks','fordev','python_jobs','dprofilefreelance'
 ];
+const PORTFOLIO_URL='https://ooops-portfolio.vercel.app/';
 const CATEGORIES = [
   {name:'Автоматизация / интеграции',weight:6,rx:/автоматизац|интеграц|api\b|crm\b|workflow|n8n|make\.com|zapier|парсинг|парсер|скрипт|бота?\b|bot\b|webhook|рутинн|процесс[а-я]* бизнес/i},
   {name:'Разработка / сайты',weight:5,rx:/разработ|frontend|backend|fullstack|фронтенд|бэкенд|вёрстк|верстк|лендинг|landing|сайт|веб.?сервис|web.app|react|next\.js|node\.js|python|javascript|typescript|telegram mini|mini app|mvp\b/i},
@@ -32,6 +33,18 @@ function cleanHtml(s) {
     .replace(/<\/(p|div)>/gi,'\n').replace(/<[^>]*>/g,' ')
     .replace(/[ \t]+/g,' ').replace(/\n\s*\n+/g,'\n').trim());
 }
+
+export function findContact(text,rawHtml='') {
+  const href=[...rawHtml.matchAll(/href=["']https:\/\/t\.me\/([A-Za-z0-9_]{5,32})(?:[/?][^"']*)?["']/gi)]
+    .map(match=>match[1])[0];
+  const mention=text.match(/(?:^|[\s(])@([A-Za-z0-9_]{5,32})\b/)?.[1];
+  const telegram=href||mention;
+  if(telegram)return {type:'telegram',value:telegram};
+  const email=text.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i)?.[0];
+  if(email)return {type:'email',value:email};
+  return null;
+}
+
 export function extractPosts(html,channel) {
   const blocks = html.split(/(?=<div\s+class="tgme_widget_message\s)/i);
   const posts=[];
@@ -43,22 +56,18 @@ export function extractPosts(html,channel) {
     const text=raw?cleanHtml(raw):'';
     if(!text || text.length<35 || seen.has(id))continue;
     seen.add(id);
-    // Official Dprofile orders channel: prefer the original public job page
-    // over a Telegram repost when it contains an explicit Dprofile job link.
     const links=[...block.matchAll(/href=["'](https:\/\/(?:www\.)?dprofile\.ru\/job\/\d+\/[a-zA-Z0-9-]+)[^"']*["']/gi)]
       .map(match=>match[1]);
     const directJob=channel==='dprofilefreelance'?links[0]:null;
     posts.push({id,source:channel,date:time?new Date(time):null,text,
-      url:directJob||'https://t.me/'+id});
+      url:directJob||'https://t.me/'+id,contact:findContact(text,raw||'')});
   }
   return posts;
 }
+
 export function assess(post,now=new Date()) {
   const text=post.text.replace(/\s+/g,' ').slice(0,5000);
   if (NEGATIVE.test(text) || FULLTIME.test(text) || RISKY.test(text)) return null;
-  // Dprofile's editorial posts can be titled as briefs rather than "Ищем...".
-  // Only relax the wording requirement for a verified-looking direct job link
-  // from the official orders channel; all category and exclusion checks stay.
   const directDprofile=post.source==='dprofilefreelance'&&/^https:\/\/(?:www\.)?dprofile\.ru\/job\/\d+\//.test(post.url);
   if (!POSITIVE.test(text) && !directDprofile) return null;
   const categories=CATEGORIES.filter(c=>c.rx.test(text));
@@ -68,13 +77,39 @@ export function assess(post,now=new Date()) {
   const scores=categories.reduce((a,c)=>a+c.weight,0);
   const boost=(/бюджет|₽|руб|\$|оплат/i.test(text)?2:0)+(/на проект|проектн|разов|фриланс|удал[её]н/i.test(text)?2:0);
   const score=Math.min(20,scores+boost);
-  // A single UX/UI (weight 4) Dprofile brief is valid when linked to a real job page.
   if(score<(directDprofile?4:5))return null;
   const budget=text.match(/(?:бюджет|оплата|стоимость)\s*[:—-]?\s*([^\n.!]{3,65})/i)?.[1]?.trim()||'не указан';
   const summary=text.split(/\n|[.!?](?=\s)/).map(x=>x.trim()).filter(x=>x.length>20)[0]||text;
   return {...post,categories:categories.map(c=>c.name),score,budget:budget.slice(0,70),summary:summary.slice(0,190)};
 }
+
 function escapeHtml(s) {return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+export function buildReplyDraft(post) {
+  const category=post.categories?.[0]||'digital-задаче';
+  const summary=String(post.summary||post.text||'').replace(/\s+/g,' ').trim().slice(0,46);
+  const intro=summary?'Увидели ваш запрос: «'+summary+(summary.length===46?'…':'')+'». ':'Увидели ваш запрос. ';
+  const draft='Здравствуйте! '+intro+'Мы — digital-студия OOOPS, работаем с направлением «'+category+'». Можем уточнить задачу и предложить решение. Портфолио: '+PORTFOLIO_URL;
+  return draft.length<=256?draft:draft.slice(0,252)+'…';
+}
+
+export function buildReplyButtons(posts) {
+  const inline_keyboard=[];
+  posts.forEach((post,index)=>{
+    const number=index+1,draft=buildReplyDraft(post);
+    const copy={text:'📋 Текст '+number,copy_text:{text:draft}};
+    if(post.contact?.type==='telegram'){
+      inline_keyboard.push([
+        {text:'✍️ Отклик '+number,url:'https://t.me/'+post.contact.value+'?text='+encodeURIComponent(draft)},
+        copy
+      ]);
+    }else{
+      inline_keyboard.push([copy,{text:'🔗 Объявление '+number,url:post.url}]);
+    }
+  });
+  return inline_keyboard.length?{inline_keyboard}:null;
+}
+
 export function renderDigest(posts,now=new Date(),sourceNotice='') {
   const date=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Moscow'}).format(now);
   let text='<b>OOOPS Jobs · '+escapeHtml(date)+'</b>\n';
@@ -88,12 +123,13 @@ export function renderDigest(posts,now=new Date(),sourceNotice='') {
     text+='Бюджет: '+escapeHtml(p.budget)+'\n';
     text+='<a href="'+p.url+'">Объявление / контакт</a> · #'+escapeHtml(p.source)+'\n\n';
   }
+  text+='«Отклик» открывает Telegram-контакт с готовым черновиком. «Текст» копирует его для других площадок. Отправка всегда вручную.\n\n';
   text+='Проверяйте дату, репутацию заказчика, оплату и актуальность. Рейтинг — эвристика, не гарантия заказа.';
   return text.slice(0,3950);
 }
+
 async function fetchPosts(channel) {
   const url='https://t.me/s/'+channel;
-  // Surface source health instead of silently treating a blocked source as no jobs.
   const ac=new AbortController(),timer=setTimeout(()=>ac.abort(),14000);
   try{
     const res=await fetch(url,{signal:ac.signal,headers:{'User-Agent':'Mozilla/5.0 (compatible; OOOPSJobs/1.0)'}});
@@ -109,20 +145,22 @@ async function fetchPosts(channel) {
     return {channel,status:'unavailable',reason,posts:[]};
   }finally{clearTimeout(timer)}
 }
-async function sendToTelegram(message){
+
+async function sendToTelegram(message,replyMarkup=null){
   const token=process.env.TELEGRAM_BOT_TOKEN,chat_id=process.env.TELEGRAM_CHAT_ID;
   if(!token||!chat_id)throw new Error('Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in repository Actions secrets');
   const threadRaw=process.env.TELEGRAM_THREAD_ID?.trim();
   if(threadRaw && !/^[1-9]\d*$/.test(threadRaw))throw new Error('TELEGRAM_THREAD_ID must be a positive numeric Telegram topic ID');
   const payload={chat_id,text:message,parse_mode:'HTML',disable_web_page_preview:true};
   if(threadRaw)payload.message_thread_id=Number(threadRaw);
+  if(replyMarkup)payload.reply_markup=replyMarkup;
   const res=await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{
-    method:'POST',headers:{'content-type':'application/json'},
-    body:JSON.stringify(payload)
+    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)
   });
   const body=await res.json();
   if(!res.ok||!body.ok)throw Error('Telegram sendMessage failed: '+JSON.stringify(body).slice(0,250));
 }
+
 async function main(){
   const now=new Date();
   const channels=(process.env.CHANNELS||CHANNELS.join(',')).split(',').map(x=>x.trim().replace(/^@/,'')).filter(x=>/^[A-Za-z0-9_]{5,32}$/.test(x));
@@ -137,7 +175,6 @@ async function main(){
     process.stderr.write('[warning] Dprofile feed '+dprofileSource.status+'; this does not mean Dprofile.ru is down.\n');
   }
   if(candidates.length===0)process.stderr.write('[warning] No matched posts. Check per-source status, freshness window and job filters.\n');
-  // Cap repetitive categories to keep the feed diverse.
   const selected=[],counts=new Map();
   for(const p of candidates){
     const cat=p.categories[0],n=counts.get(cat)||0;
@@ -151,8 +188,14 @@ async function main(){
     ?'Из канала Dprofile не удалось извлечь объявления. Сайт Dprofile может при этом работать.'
     :'';
   const digest=renderDigest(selected,now,sourceNotice);
-  if(process.env.DRY_RUN==='1'){console.log(digest);return}
-  await sendToTelegram(digest);
-  console.log('Sent '+selected.length+' public job postings to the configured Telegram chat');
+  const replyMarkup=buildReplyButtons(selected);
+  if(process.env.DRY_RUN==='1'){
+    console.log(digest);
+    console.log('\n[reply-buttons] '+JSON.stringify(replyMarkup));
+    return;
+  }
+  await sendToTelegram(digest,replyMarkup);
+  console.log('Sent '+selected.length+' public job postings with reply drafts to the configured Telegram chat');
 }
+
 if(process.argv[1]&&import.meta.url===new URL('file://'+process.argv[1]).href){main().catch(e=>{console.error(e.message);process.exitCode=1})}
