@@ -182,6 +182,18 @@ test('selects up to 18 jobs with no more than five per direction',()=>{
  for(const count of counts.values())assert.ok(count<=5);
 });
 
+test('reserves digest places for eligible Dprofile jobs',()=>{
+ const candidates=[
+  ...Array.from({length:18},(_,index)=>({id:'general-'+index,source:'GetClient',score:20-index,categories:['Разработка / сайты']})),
+  {id:'dprofile-1',source:'dprofilefreelance',score:6,categories:['UX/UI и исследование']},
+  {id:'dprofile-2',source:'dprofilefreelance',score:5,categories:['Презентации / графика']}
+ ];
+ const selected=selectDigestPosts(candidates);
+ assert.equal(selected.length,12);
+ assert.deepEqual(selected.filter(post=>post.source==='dprofilefreelance').map(post=>post.id),['dprofile-1','dprofile-2']);
+ assert.equal(new Set(selected.map(post=>post.id)).size,selected.length);
+});
+
 test('parses Telegram message IDs for in-place button updates',()=>{
  assert.deepEqual(parseMessageIds('76, 77,78'),[76,77,78]);
  assert.deepEqual(parseMessageIds(''),[]);
