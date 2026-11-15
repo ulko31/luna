@@ -47,13 +47,21 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
         run: node discover-chat.mjs
       - name: Preview matches without Telegram access
-        if: (github.event_name == 'push' && !contains(github.event.head_commit.message, '[send-digest]')) || (github.event_name == 'workflow_dispatch' && inputs.mode == 'preview')
+        if: (github.event_name == 'push' && !contains(github.event.head_commit.message, '[send-digest]') && !contains(github.event.head_commit.message, '[edit-digest:')) || (github.event_name == 'workflow_dispatch' && inputs.mode == 'preview')
         working-directory: jobs-bot
         env:
           DRY_RUN: '1'
         run: node digest.mjs
+      - name: Read Telegram message IDs for in-place edit
+        if: github.event_name == 'push' && contains(github.event.head_commit.message, '[edit-digest:')
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          ids="$(printf '%s' "$COMMIT_MESSAGE" | sed -n 's/.*\[edit-digest:\([0-9,]*\)\].*/\1/p')"
+          test -n "$ids"
+          echo "TELEGRAM_EDIT_MESSAGE_IDS=$ids" >> "$GITHUB_ENV"
       - name: Send curated daily jobs to OOOPS group
-        if: github.event_name == 'schedule' || inputs.mode == 'send' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[send-digest]'))
+        if: github.event_name == 'schedule' || inputs.mode == 'send' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[send-digest]')) || (github.event_name == 'push' && contains(github.event.head_commit.message, '[edit-digest:'))
         working-directory: jobs-bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}

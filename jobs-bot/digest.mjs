@@ -209,6 +209,24 @@ async function sendToTelegram(message,replyMarkup=null){
   return body.result?.message_id;
 }
 
+export function parseMessageIds(value='') {
+  if(!value.trim())return [];
+  const ids=value.split(',').map(item=>Number(item.trim()));
+  if(ids.some(id=>!Number.isSafeInteger(id)||id<1))throw new Error('TELEGRAM_EDIT_MESSAGE_IDS must contain positive numeric IDs separated by commas');
+  return ids;
+}
+
+async function editTelegramReplyMarkup(messageId,replyMarkup){
+  const token=process.env.TELEGRAM_BOT_TOKEN,chat_id=process.env.TELEGRAM_CHAT_ID;
+  if(!token||!chat_id)throw new Error('Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in repository Actions secrets');
+  const res=await fetch('https://api.telegram.org/bot'+token+'/editMessageReplyMarkup',{
+    method:'POST',headers:{'content-type':'application/json'},
+    body:JSON.stringify({chat_id,message_id:messageId,reply_markup:replyMarkup})
+  });
+  const body=await res.json();
+  if(!res.ok||!body.ok)throw Error('Telegram editMessageReplyMarkup failed: '+JSON.stringify(body).slice(0,250));
+}
+
 async function main(){
   const now=new Date();
   const channels=(process.env.CHANNELS||CHANNELS.join(',')).split(',').map(x=>x.trim().replace(/^@/,'')).filter(x=>/^[A-Za-z0-9_]{5,32}$/.test(x));
@@ -242,6 +260,15 @@ async function main(){
       console.log(renderDigest(batch,now,notice));
       console.log('\n[reply-buttons '+(index+1)+'/'+batches.length+'] '+JSON.stringify(buildReplyButtons(batch)));
     });
+    return;
+  }
+  const editIds=parseMessageIds(process.env.TELEGRAM_EDIT_MESSAGE_IDS||'');
+  if(editIds.length){
+    if(editIds.length!==batches.length)throw new Error('Telegram edit ID count must match reply batch count');
+    for(let i=0;i<batches.length;i++){
+      await editTelegramReplyMarkup(editIds[i],buildReplyButtons(batches[i]));
+      console.log('Updated Telegram message '+editIds[i]+' reply buttons');
+    }
     return;
   }
   for(let i=0;i<batches.length;i++){

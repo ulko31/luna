@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {extractPosts,assess,renderDigest,findContact,buildReplyDraft,buildReplyButtons,splitReplyBatches} from './digest.mjs';
+import {extractPosts,assess,renderDigest,findContact,buildReplyDraft,buildReplyButtons,splitReplyBatches,parseMessageIds} from './digest.mjs';
 
 const now=new Date('2026-11-14T06:17:00Z');
 const sample={
@@ -137,6 +137,12 @@ test('splits reply keyboards into Telegram-safe batches',()=>{
  const batches=splitReplyBatches(posts);
  assert.deepEqual(batches.map(batch=>batch.length),[3,3,2]);
  for(const batch of batches)assert.ok(buildReplyButtons(batch).inline_keyboard.length<=3);
+});
+
+test('parses Telegram message IDs for in-place button updates',()=>{
+ assert.deepEqual(parseMessageIds('76, 77,78'),[76,77,78]);
+ assert.deepEqual(parseMessageIds(''),[]);
+ assert.throws(()=>parseMessageIds('76,nope'));
 });
 
 test('Dprofile official channel passes through direct job links',()=>{
