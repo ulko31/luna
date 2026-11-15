@@ -53,7 +53,7 @@ test('builds a short personalized reply and Telegram deep link',()=>{
  assert.ok(draft.length<=256);
  assert.match(draft,/разработке сайта или сервиса/);
  assert.match(draft,/Задача ещё актуальна/);
- assert.match(draft,/ooops\.agency/);
+ assert.match(draft,/ooops-portfolio\.vercel\.app/);
  const keyboard=buildReplyButtons([post]);
  assert.match(keyboard.inline_keyboard[0][0].url,/https:\/\/t\.me\/clientname\?text=/);
  assert.equal(keyboard.inline_keyboard[0][1].copy_text.text,draft);
