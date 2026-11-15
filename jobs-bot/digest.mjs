@@ -12,11 +12,11 @@ const CATEGORIES = [
   {name:'UX/UI и исследование',weight:4,rx:/ux\b|ui\b|figma|прототип|дизайн интерфейс|исследовани[яе] пользовател|юзабилити|user.?flow|пользовательск.*сценари|ai.?сервис/i},
   {name:'Презентации / графика',weight:4,rx:/презентаци|powerpoint|google slides|питч.?дек|инфографик|баннер|креатив|графическ.*дизайн|дизайн\w*.*карточ|дизайнер\w*.*карточ|карточ\w*.*(?:товар|маркетплейс)|иллюстрац/i},
   {name:'Брендинг / айдентика',weight:3,rx:/брендинг|айдентик|фирменн.*стил|логотип|визуальн.*стил|упаковк/i},
-  {name:'Контент / SMM / видео',weight:3,rx:/smm\b|соцсет|контент|reels|монтаж|видео|анимаци|motion|рилс|съёмк|съемк/i},
+  {name:'Контент / SMM / видео',weight:3,rx:/smm\b|соцсет|контент|reels|монтаж|видео|анимаци|motion|рилс|съёмк|съемк|таргетолог|копирайтер|менеджер\w*.*реклам|закупк\w*.*реклам|медиаплан/i},
   {name:'Данные / аналитика',weight:3,rx:/аналитик|дашборд|dashboard|sql\b|данных|data analyst|визуализац.*данн/i}
 ];
 const POSITIVE = /ищем|нужен|нужна|требует|заказ|проект|ищу|тз\b|задач|бюджет|оплата|удал[её]н|фриланс|сотрудничеств|looking for|hiring|freelance/i;
-const NEGATIVE = /предлагаю свои услуги|ищу работу|мо[её] портфолио|резюме кандидата|ищу заказчиков|ищем клиентов|бесплатный вебинар|курсы обучения|стажировк.*без оплаты|вакансия закрыта/i;
+const NEGATIVE = /предлагаю свои услуги|ищу работу|мо[её] портфолио|резюме кандидата|#резюме\b|#помогу\b|окажу услуги|возьму.*заказ|есть идея или задача|ищу заказчиков|ищем клиентов|бесплатный вебинар|курсы обучения|стажировк.*без оплаты|вакансия закрыта/i;
 const FULLTIME = /строго в офисе|только офис|полная занятость.*офис|5\/2 в офисе/i;
 const RISKY = /оплат[аи] доступ|взнос|первоначальн.*оплат|депозит для работы|казино|ставки на спорт|букмекер|вейп|никотин|оружие|наркотик/i;
 const seen = new Set();
@@ -72,7 +72,13 @@ export function assess(post,now=new Date()) {
   if (!POSITIVE.test(text) && !directDprofile) return null;
   const matched=CATEGORIES.filter(c=>c.rx.test(text));
   const lead=text.slice(0,700);
-  const primary=[...matched].sort((a,b)=>{
+  const named=name=>matched.find(category=>category.name===name);
+  const rolePrimary=
+    (/ux\b|ui\b|дизайн\w*.*(?:интерфейс|сайт)|(?:интерфейс|сайт).*дизайн/i.test(lead)&&named('UX/UI и исследование'))||
+    (/бренд.?дизайнер|айдентик|фирменн.*стил|логотип/i.test(lead)&&named('Брендинг / айдентика'))||
+    (/(?:#дизайнер\w*|ищ\w*\s+дизайнер|дизайнер\w*.*(?:карточ|материал|презентац|баннер|обложк|полиграф))|карточ\w*.*(?:товар|маркетплейс)/i.test(lead)&&named('Презентации / графика'))||
+    (/(?:smm\b|таргетолог|копирайтер|монтаж[её]р|менеджер\w*.*реклам|закупк\w*.*реклам|медиаплан)/i.test(lead)&&named('Контент / SMM / видео'));
+  const primary=rolePrimary||[...matched].sort((a,b)=>{
     const ai=lead.search(a.rx),bi=lead.search(b.rx);
     return (ai<0?9999:ai)-(bi<0?9999:bi)||b.weight-a.weight;
   })[0];
@@ -84,7 +90,9 @@ export function assess(post,now=new Date()) {
   const boost=(/бюджет|₽|руб|\$|оплат/i.test(text)?2:0)+(/на проект|проектн|разов|фриланс|удал[её]н/i.test(text)?2:0);
   const score=Math.min(20,scores+boost);
   if(score<(directDprofile?4:5))return null;
-  const budget=text.match(/(?:бюджет|оплата|стоимость)\s*[:—-]?\s*([^\n.!]{3,65})/i)?.[1]?.trim()||'не указан';
+  const budgetRaw=text.match(/(?:^|[\s,.;(])(?:бюджет|оплата|стоимость|доход|ставка|зарплата)(?=$|[\s:—-])\s*[:—-]?\s*([^\n.!]{3,65})/iu)?.[1]
+    ?.replace(/^[^\d₽$€]+(?=\d)/,'').trim();
+  const budget=budgetRaw&&/(?:\d|₽|руб|\$|€|договор)/i.test(budgetRaw)?budgetRaw:'не указан';
   const summary=text.split(/\n|[.!?](?=\s)/).map(x=>x.trim()).filter(x=>x.length>20)[0]||text;
   return {...post,categories:categories.map(c=>c.name),score,budget:budget.slice(0,70),summary:summary.slice(0,190)};
 }
