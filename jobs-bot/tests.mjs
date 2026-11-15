@@ -43,6 +43,7 @@ test('extracts Telegram mentions and email fallback',()=>{
 test('does not treat Telegram bots or source channels as client contacts',()=>{
  assert.equal(findContact('Откликнуться через @order_helper_bot'),null);
  assert.equal(findContact('Подробности и отклик в канале @vacancysmm'),null);
+ assert.equal(findContact('Для отклика переходите в @freelance_rabota_chat'),null);
  assert.equal(findContact('Отклик по ссылке','Отклик: <a href="https://t.me/freelancetaverna">перейти</a>'),null);
 });
 
