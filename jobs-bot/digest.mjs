@@ -40,7 +40,7 @@ function cleanHtml(s) {
 }
 
 export function findContact(text,rawHtml='') {
-  const unsafe=username=>/bot$|(?:^|_)channel$/i.test(username)||CHANNELS.some(channel=>channel.toLowerCase()===username.toLowerCase());
+  const unsafe=username=>/(?:bot|chat|group|channel)$/i.test(username)||CHANNELS.some(channel=>channel.toLowerCase()===username.toLowerCase());
   const mentions=[...text.matchAll(/(?:^|[\s(])@([A-Za-z0-9_]{5,32})\b/g)];
   const mention=mentions.map(match=>({username:match[1],index:(match.index||0)+match[0].indexOf('@')})).find(candidate=>{
     const context=text.slice(Math.max(0,candidate.index-90),candidate.index+candidate.username.length+40);
