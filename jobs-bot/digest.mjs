@@ -110,6 +110,13 @@ export function buildReplyButtons(posts) {
   return inline_keyboard.length?{inline_keyboard}:null;
 }
 
+export function splitReplyBatches(posts,size=3) {
+  if(!Number.isInteger(size)||size<1)throw new Error('Reply batch size must be a positive integer');
+  const batches=[];
+  for(let i=0;i<posts.length;i+=size)batches.push(posts.slice(i,i+size));
+  return batches;
+}
+
 export function renderDigest(posts,now=new Date(),sourceNotice='') {
   const date=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',timeZone:'Europe/Moscow'}).format(now);
   let text='<b>OOOPS Jobs · '+escapeHtml(date)+'</b>\n';
@@ -187,15 +194,20 @@ async function main(){
     :dprofileSource?.status==='empty'
     ?'Из канала Dprofile не удалось извлечь объявления. Сайт Dprofile может при этом работать.'
     :'';
-  const digest=renderDigest(selected,now,sourceNotice);
-  const replyMarkup=buildReplyButtons(selected);
+  const batches=selected.length?splitReplyBatches(selected):[[]];
   if(process.env.DRY_RUN==='1'){
-    console.log(digest);
-    console.log('\n[reply-buttons] '+JSON.stringify(replyMarkup));
+    batches.forEach((batch,index)=>{
+      const notice=index===0?sourceNotice:'';
+      console.log(renderDigest(batch,now,notice));
+      console.log('\n[reply-buttons '+(index+1)+'/'+batches.length+'] '+JSON.stringify(buildReplyButtons(batch)));
+    });
     return;
   }
-  await sendToTelegram(digest,replyMarkup);
-  console.log('Sent '+selected.length+' public job postings with reply drafts to the configured Telegram chat');
+  for(let i=0;i<batches.length;i++){
+    const batch=batches[i],notice=i===0?sourceNotice:'';
+    await sendToTelegram(renderDigest(batch,now,notice),buildReplyButtons(batch));
+  }
+  console.log('Sent '+selected.length+' public job postings in '+batches.length+' Telegram message(s) with reply drafts');
 }
 
 if(process.argv[1]&&import.meta.url===new URL('file://'+process.argv[1]).href){main().catch(e=>{console.error(e.message);process.exitCode=1})}

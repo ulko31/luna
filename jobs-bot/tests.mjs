@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {extractPosts,assess,renderDigest,findContact,buildReplyDraft,buildReplyButtons} from './digest.mjs';
+import {extractPosts,assess,renderDigest,findContact,buildReplyDraft,buildReplyButtons,splitReplyBatches} from './digest.mjs';
 
 const now=new Date('2026-11-14T06:17:00Z');
 const sample={
@@ -63,6 +63,14 @@ test('uses copy and source buttons when direct Telegram contact is missing',()=>
  const keyboard=buildReplyButtons([post]);
  assert.equal(keyboard.inline_keyboard[0][0].copy_text.text,buildReplyDraft(post));
  assert.equal(keyboard.inline_keyboard[0][1].url,post.url);
+});
+
+test('splits reply keyboards into Telegram-safe batches',()=>{
+ const post=assess(sample,now);
+ const posts=Array.from({length:8},(_,index)=>({...post,id:'GetClient/'+(200+index)}));
+ const batches=splitReplyBatches(posts);
+ assert.deepEqual(batches.map(batch=>batch.length),[3,3,2]);
+ for(const batch of batches)assert.ok(buildReplyButtons(batch).inline_keyboard.length<=3);
 });
 
 test('Dprofile official channel passes through direct job links',()=>{
