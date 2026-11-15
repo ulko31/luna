@@ -102,6 +102,11 @@ test('normalizes dot-separated thousands in salary',()=>{
  assert.match(post.budget,/70 000–85 000₽/);
 });
 
+test('does not include the next sentence in the budget',()=>{
+ const post=assess({...sample,text:'Ищем графического дизайнера. Зарплата: 70.000–85.000₽. Ищем человека в команду для оперативной работы.'},now);
+ assert.equal(post.budget,'70 000–85 000₽');
+});
+
 test('rejects enthusiasm-only projects',()=>{
  assert.equal(assess({...sample,text:'Ищем графического дизайнера, проект развивается на энтузиазме. Нужны баннеры и карточки.'},now),null);
 });
