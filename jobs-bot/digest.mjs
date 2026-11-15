@@ -3,16 +3,21 @@
 const CHANNELS = [
   'zakaz_design','GetClient','FreeVacanciesIT','frilans',
   'Koteyka_Freelancer','vacancysmm','designer_jobs','uxui_jobs',
-  'jobgeeks','fordev','python_jobs','dprofilefreelance'
+  'jobgeeks','fordev','python_jobs','dprofilefreelance',
+  'smmlancer','freelancetaverna','golubin_channel','program_job',
+  'digitaltender','uiux_jobs_resumes'
 ];
 const PORTFOLIO_URL='https://ooops-portfolio.vercel.app/';
+const FRESHNESS_HOURS=72;
+const MAX_DIGEST_POSTS=18;
+const MAX_PER_CATEGORY=5;
 const CATEGORIES = [
   {name:'Автоматизация / интеграции',weight:6,rx:/автоматизац|интеграц|api\b|crm\b|workflow|n8n|make\.com|zapier|парсинг|парсер|скрипт|бота?\b|bot\b|webhook|рутинн|процесс[а-я]* бизнес/i},
   {name:'Разработка / сайты',weight:5,rx:/разработ|frontend|backend|fullstack|фронтенд|бэкенд|вёрстк|верстк|лендинг|landing|сайт|веб.?сервис|web.app|react|next\.js|node\.js|python|javascript|typescript|telegram mini|mini app|mvp\b/i},
   {name:'UX/UI и исследование',weight:4,rx:/ux\b|ui\b|figma|прототип|дизайн интерфейс|исследовани[яе] пользовател|юзабилити|user.?flow|пользовательск.*сценари|ai.?сервис/i},
   {name:'Презентации / графика',weight:4,rx:/презентаци|powerpoint|google slides|питч.?дек|инфографик|баннер|креатив|графическ.*дизайн|дизайн\w*.*карточ|дизайнер\w*.*карточ|карточ\w*.*(?:товар|маркетплейс)|иллюстрац/i},
   {name:'Брендинг / айдентика',weight:3,rx:/брендинг|айдентик|фирменн.*стил|логотип|визуальн.*стил|упаковк/i},
-  {name:'Контент / SMM / видео',weight:3,rx:/smm\b|соцсет|контент|reels|монтаж|видео|анимаци|motion|рилс|съёмк|съемк|таргетолог|копирайтер|менеджер\w*.*реклам|закупк\w*.*реклам|медиаплан/i},
+  {name:'Контент / SMM / видео',weight:3,rx:/smm\b|соцсет|контент.?план|контент.?мейкер|reels|монтаж|видео|анимаци|motion|рилс|съёмк|съемк|таргетолог|менеджер\w*.*реклам|закупк\w*.*реклам|медиаплан/i},
   {name:'Данные / аналитика',weight:3,rx:/аналитик|дашборд|dashboard|sql\b|данных|data analyst|визуализац.*данн/i}
 ];
 const POSITIVE = /ищем|нужен|нужна|требует|заказ|проект|ищу|тз\b|задач|бюджет|оплата|удал[её]н|фриланс|сотрудничеств|looking for|hiring|freelance/i;
@@ -35,10 +40,15 @@ function cleanHtml(s) {
 }
 
 export function findContact(text,rawHtml='') {
-  const href=[...rawHtml.matchAll(/href=["']https:\/\/t\.me\/([A-Za-z0-9_]{5,32})(?:[/?][^"']*)?["']/gi)]
-    .map(match=>match[1])[0];
-  const mention=text.match(/(?:^|[\s(])@([A-Za-z0-9_]{5,32})\b/)?.[1];
-  const telegram=href||mention;
+  const unsafe=username=>/bot$|(?:^|_)channel$/i.test(username)||CHANNELS.some(channel=>channel.toLowerCase()===username.toLowerCase());
+  const mentions=[...text.matchAll(/(?:^|[\s(])@([A-Za-z0-9_]{5,32})\b/g)];
+  const mention=mentions.map(match=>({username:match[1],index:(match.index||0)+match[0].indexOf('@')})).find(candidate=>{
+    const context=text.slice(Math.max(0,candidate.index-90),candidate.index+candidate.username.length+40);
+    return /пиш|связ|контакт|отклик|личк|\bлс\b|директ/i.test(context)&&!unsafe(candidate.username);
+  })?.username;
+  const linked=[...rawHtml.matchAll(/(?:пиш|связ|контакт|отклик|личк|\bлс\b)[\s\S]{0,180}?href=["']https:\/\/t\.me\/([A-Za-z0-9_]{5,32})(?:[/?][^"']*)?["']/gi)]
+    .map(match=>match[1]).find(username=>!unsafe(username));
+  const telegram=mention||linked;
   if(telegram)return {type:'telegram',value:telegram};
   const email=text.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i)?.[0];
   if(email)return {type:'email',value:email};
@@ -68,6 +78,9 @@ export function extractPosts(html,channel) {
 export function assess(post,now=new Date()) {
   const text=post.text.replace(/\s+/g,' ').slice(0,5000);
   if (NEGATIVE.test(text) || FULLTIME.test(text) || RISKY.test(text)) return null;
+  const copywritingOnly=/копирайтер|редактор\p{L}*|написани\p{L}*\s+(?:текст|стат|пост)/iu.test(text)&&
+    !/smm\b|контент.?план|контент.?мейкер|reels|рилс|монтаж|видео|съёмк|съемк|таргет|медиаплан|дизайн|сайт|разработ|автоматизац|интеграц/iu.test(text);
+  if(copywritingOnly)return null;
   const directDprofile=post.source==='dprofilefreelance'&&/^https:\/\/(?:www\.)?dprofile\.ru\/job\/\d+\//.test(post.url);
   if (!POSITIVE.test(text) && !directDprofile) return null;
   const matched=CATEGORIES.filter(c=>c.rx.test(text));
@@ -80,7 +93,7 @@ export function assess(post,now=new Date()) {
     (/(?:графическ|визуальн)\p{L}*\s+дизайнер|(?:#дизайнер\p{L}*|ищ\p{L}*\s+дизайнер|дизайнер\p{L}*.*(?:карточ|материал|презентац|баннер|обложк|полиграф))|карточ\p{L}*.*(?:товар|маркетплейс)/iu.test(headline)&&named('Презентации / графика'))||
     (/(?:tilda|сделать\s+сайт|разработ\p{L}*\s+(?:сайт|лендинг)|лендинг|web.?сервис)/iu.test(lead)&&named('Разработка / сайты'))||
     (/(?:графическ|визуальн)\p{L}*\s+дизайнер|(?:#дизайнер\p{L}*|ищ\p{L}*\s+дизайнер|дизайнер\p{L}*.*(?:карточ|материал|презентац|баннер|обложк|полиграф))|карточ\p{L}*.*(?:товар|маркетплейс)/iu.test(lead)&&named('Презентации / графика'))||
-    (/(?:smm\b|таргетолог|копирайтер|монтаж[её]р|менеджер\p{L}*.*реклам|закупк\p{L}*.*реклам|медиаплан)/iu.test(lead)&&named('Контент / SMM / видео'));
+    (/(?:smm\b|таргетолог|монтаж[её]р|контент.?мейкер|менеджер\p{L}*.*реклам|закупк\p{L}*.*реклам|медиаплан)/iu.test(lead)&&named('Контент / SMM / видео'));
   const primary=rolePrimary||[...matched].sort((a,b)=>{
     const ai=lead.search(a.rx),bi=lead.search(b.rx);
     return (ai<0?9999:ai)-(bi<0?9999:bi)||b.weight-a.weight;
@@ -88,7 +101,7 @@ export function assess(post,now=new Date()) {
   const categories=primary?[primary,...matched.filter(c=>c!==primary)]:[];
   if (!categories.length)return null;
   const age=post.date?(now-post.date)/3600000:null;
-  if(age!==null&&(age>48||age< -2))return null;
+  if(age!==null&&(age>FRESHNESS_HOURS||age< -2))return null;
   const scores=categories.reduce((a,c)=>a+c.weight,0);
   const boost=(/бюджет|₽|руб|\$|оплат/i.test(text)?2:0)+(/на проект|проектн|разов|фриланс|удал[её]н/i.test(text)?2:0);
   const score=Math.min(20,scores+boost);
@@ -104,33 +117,87 @@ export function assess(post,now=new Date()) {
 function escapeHtml(s) {return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 export function buildReplyDraft(post) {
-  const text=String(post.summary||post.text||'').replace(/\s+/g,' ').trim();
+  // Use the whole vacancy, not only its first summary sentence: the details
+  // about formats, source materials and expected result make the reply useful.
+  const text=String(post.text||post.summary||'').replace(/\s+/g,' ').trim();
   const category=post.categories?.[0]||'';
-  let task='вашей задаче',solution='уточнить детали и предложить подходящее решение';
-  if(category==='Презентации / графика'&&/карточ/i.test(text)){
-    task='дизайну карточек';
-    solution='продумать визуальную систему и собрать карточки в едином стиле';
+  let role='исполнителя на эту задачу',offer='Разберём ТЗ и предложим конкретный план работы';
+  const hasDevelopment=post.categories?.includes('Разработка / сайты');
+  const hasAutomation=post.categories?.includes('Автоматизация / интеграции');
+  if(hasDevelopment&&hasAutomation&&/сайт|лендинг|web.?сервис/i.test(text)&&/бот|crm|api\b|интеграц|автоматизац/i.test(text)){
+    role='команды для сайта и автоматизации заявок';
+    offer='Разработаем сайт и свяжем формы с CRM, API или Telegram-ботом в одном рабочем сценарии';
+  }else if(category==='Презентации / графика'&&/карточ/i.test(text)){
+    role='дизайнера карточек';
+    offer='Соберём единую визуальную систему, инфографику и адаптации под площадку';
   }else if(category==='Презентации / графика'&&/презентаци|питч.?дек|powerpoint|google slides/i.test(text)){
-    task='дизайну презентации';solution='выстроить структуру и оформить понятную визуальную подачу';
+    role='дизайнера презентации';offer='Выстроим структуру слайдов и оформим понятную визуальную подачу';
   }else if(category==='Презентации / графика'){
-    task='графическому дизайну';solution='разработать визуальную систему и подготовить нужные материалы';
+    role='графического дизайнера';offer='Разработаем визуальную систему и подготовим нужные форматы без разрозненного стиля';
   }else if(category==='Брендинг / айдентика'){
-    task='брендингу';solution='собрать целостную айдентику под продукт и аудиторию';
+    role='дизайнера айдентики';offer='Соберём концепцию, ключевые носители и правила визуального стиля под аудиторию';
   }else if(category==='UX/UI и исследование'){
-    task='UX/UI-дизайну';solution='проработать пользовательский путь и собрать интерфейс в Figma';
+    role='UX/UI-дизайнера';offer='Проработаем сценарии, прототип и интерфейс в Figma с состояниями и адаптивами';
+  }else if(category==='Разработка / сайты'&&/telegram mini|mini app|мини.?прилож/i.test(text)){
+    role='разработчика Telegram Mini App';offer='Спроектируем интерфейс, разработаем Mini App и подключим нужный backend/API';
+  }else if(category==='Разработка / сайты'&&/интернет.?магазин|корзин|оплат|e.?commerce/i.test(text)){
+    role='разработчика интернет-магазина';offer='Соберём каталог, корзину и оплату, проверим мобильный сценарий покупки';
+  }else if(category==='Разработка / сайты'&&/tilda/i.test(text)){
+    role='разработчика сайта на Tilda';offer='Соберём адаптивные блоки, формы и интеграции и подготовим сайт к запуску';
+  }else if(category==='Разработка / сайты'&&/wordpress|вордпресс/i.test(text)){
+    role='разработчика WordPress';offer='Соберём адаптивный сайт, настроим нужные формы и передадим удобное редактирование';
+  }else if(category==='Разработка / сайты'&&/лендинг|landing/i.test(text)){
+    role='разработчика лендинга';offer='Продумаем структуру, соберём адаптив и подключим формы и аналитику';
   }else if(category==='Разработка / сайты'){
-    task='разработке сайта или сервиса';solution='спроектировать решение и довести его до работающего запуска';
+    role='разработчика сайта или сервиса';offer='Спроектируем решение, соберём адаптив и доведём проект до рабочего запуска';
+  }else if(category==='Автоматизация / интеграции'&&/telegram|телеграм|бота?\b|bot\b/i.test(text)){
+    role='разработчика Telegram-бота';offer='Соберём сценарии бота, подключим API и предусмотрим удобное управление';
+  }else if(category==='Автоматизация / интеграции'&&/crm|amo.?crm|api\b|n8n|make\.com|zapier|webhook/i.test(text)){
+    role='специалиста по интеграциям';offer='Свяжем сервисы через API, настроим передачу данных и обработку ошибок';
+  }else if(category==='Автоматизация / интеграции'&&/парсинг|парсер/i.test(text)){
+    role='разработчика парсера';offer='Настроим сбор, очистку и выгрузку данных с контролем дублей и ошибок';
   }else if(category==='Автоматизация / интеграции'){
-    task='автоматизации';solution='разобрать процесс и собрать рабочую автоматизацию';
+    role='специалиста по автоматизации';offer='Разберём текущий процесс и автоматизируем конкретные ручные этапы';
   }else if(category==='Контент / SMM / видео'){
-    task='контенту и продвижению';solution='собрать понятную концепцию и подготовить материалы';
+    if(/монтаж|видеомонтаж|reels|shorts|рилс|youtube|подкаст/i.test(text)){
+      if(/reels|shorts|рилс|вертикальн|tiktok/i.test(text)){
+        role='монтажёра Reels/Shorts';offer='Смонтируем ролики из исходников: темп, субтитры, музыка и аккуратные эффекты';
+      }else if(/подкаст|интервью|youtube|длинн/i.test(text)){
+        role='монтажёра длинных видео';offer='Соберём выпуск, почистим паузы и добавим звук, графику и нужные вставки';
+      }else{
+        role='видеомонтажёра';offer='Соберём ролики по ТЗ, выстроим темп и аккуратно оформим звук, титры и графику';
+      }
+    }else if(/таргетолог|таргетирован|рекламн.*кабинет/i.test(text)){
+      role='таргетолога';offer='Подготовим гипотезы и креативы, настроим кампании и прозрачную аналитику';
+    }else if(/закупк\p{L}*.*реклам|медиаплан|посев|блогер/iu.test(text)){
+      role='менеджера по рекламе';offer='Подберём площадки, соберём медиаплан и проконтролируем размещения и результаты';
+    }else if(/контент.?мейкер|съёмк|съемк|фото.*видео/i.test(text)){
+      role='контент-мейкера';offer='Соберём рубрики и производство фото/видео под регулярный выход контента';
+    }else{
+      role='SMM-специалиста';offer='Соберём рубрики, контент-план и выпуск постов/Reels с анализом результатов';
+    }
   }else if(category==='Данные / аналитика'){
-    task='аналитике';solution='разобрать данные и подготовить понятный результат';
+    role='аналитика';offer='Соберём данные, проверим метрики и подготовим понятный отчёт или дашборд';
   }
-  const draft='Здравствуйте! Увидели ваш запрос по '+task+'. Можем подключиться: '+solution+'. Подскажите, задача ещё актуальна? Если да, уточним объём и предложим сроки и стоимость. Работы: '+PORTFOLIO_URL;
+  const draft='Здравствуйте! Актуален поиск '+role+'? '+offer+'. Пришлём подходящие примеры и оценим сроки и стоимость. Портфолио: '+PORTFOLIO_URL;
   if(draft.length<=256)return draft;
-  const compact='Здравствуйте! Увидели ваш запрос по '+task+'. Можем подключиться: '+solution+'. Задача ещё актуальна? Уточним объём, сроки и стоимость. Работы: '+PORTFOLIO_URL;
+  const compact='Здравствуйте! Актуален поиск '+role+'? '+offer+'. Уточним объём, сроки и стоимость. Портфолио: '+PORTFOLIO_URL;
   return compact.length<=256?compact:compact.slice(0,252).replace(/\s+\S*$/,'')+'…';
+}
+
+export function selectDigestPosts(candidates,maxPosts=MAX_DIGEST_POSTS,maxPerCategory=MAX_PER_CATEGORY){
+  if(!Number.isInteger(maxPosts)||maxPosts<1||!Number.isInteger(maxPerCategory)||maxPerCategory<1){
+    throw new Error('Digest limits must be positive integers');
+  }
+  const selected=[],counts=new Map();
+  for(const post of candidates){
+    const category=post.categories?.[0]||'Без категории';
+    const count=counts.get(category)||0;
+    if(count>=maxPerCategory)continue;
+    selected.push(post);counts.set(category,count+1);
+    if(selected.length>=maxPosts)break;
+  }
+  return selected;
 }
 
 export function buildReplyButtons(posts) {
@@ -241,13 +308,7 @@ async function main(){
     process.stderr.write('[warning] Dprofile feed '+dprofileSource.status+'; this does not mean Dprofile.ru is down.\n');
   }
   if(candidates.length===0)process.stderr.write('[warning] No matched posts. Check per-source status, freshness window and job filters.\n');
-  const selected=[],counts=new Map();
-  for(const p of candidates){
-    const cat=p.categories[0],n=counts.get(cat)||0;
-    if(n>=3)continue;
-    selected.push(p);counts.set(cat,n+1);
-    if(selected.length>=8)break;
-  }
+  const selected=selectDigestPosts(candidates);
   const sourceNotice=dprofileSource?.status==='unavailable'
     ?'Источник Dprofile временно недоступен боту. Остальные каналы проверены независимо.'
     :dprofileSource?.status==='empty'
