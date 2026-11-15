@@ -47,13 +47,13 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
         run: node discover-chat.mjs
       - name: Preview matches without Telegram access
-        if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'preview')
+        if: (github.event_name == 'push' && !contains(github.event.head_commit.message, '[send-digest]')) || (github.event_name == 'workflow_dispatch' && inputs.mode == 'preview')
         working-directory: jobs-bot
         env:
           DRY_RUN: '1'
         run: node digest.mjs
       - name: Send curated daily jobs to OOOPS group
-        if: github.event_name == 'schedule' || inputs.mode == 'send'
+        if: github.event_name == 'schedule' || inputs.mode == 'send' || (github.event_name == 'push' && contains(github.event.head_commit.message, '[send-digest]'))
         working-directory: jobs-bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.OOOPS_JOBS_BOT_TOKEN }}
