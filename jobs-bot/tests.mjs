@@ -68,6 +68,23 @@ test('prioritizes a card-design hashtag over unrelated automation wording',()=>{
  assert.doesNotMatch(draft,/запрос по автоматизации/);
 });
 
+test('rejects freelancer self-promotion hashtags',()=>{
+ assert.equal(assess({...sample,text:'#резюме #помогу #дизайн Есть идея или задача? Создам сайт, графику и автоматизацию.'},now),null);
+});
+
+test('treats educational course materials as graphic design, not video',()=>{
+ const post=assess({...sample,text:'#дизайнеробразовательныхпродуктов Для видеокурсов ищут дизайнера дополнительных материалов: гайды, презентации, баннеры и обложки. Проектная работа, оплата 30 000 руб.'},now);
+ assert.equal(post.categories[0],'Презентации / графика');
+ assert.match(buildReplyDraft(post),/графическому дизайну|дизайну презентации/);
+});
+
+test('treats advertising manager roles as content and promotion',()=>{
+ const post=assess({...sample,text:'#менеджерпорекламе Ищут менеджера по закупке рекламы в Instagram и Telegram: медиаплан, анализ блогеров, контроль интеграций. Удалённая проектная работа, доход 50 000 руб.'},now);
+ assert.equal(post.categories[0],'Контент / SMM / видео');
+ assert.match(buildReplyDraft(post),/контенту и продвижению/);
+ assert.match(post.budget,/50 000/);
+});
+
 test('uses copy and source buttons when direct Telegram contact is missing',()=>{
  const post=assess({...sample,contact:null},now);
  const keyboard=buildReplyButtons([post]);
