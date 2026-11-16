@@ -268,12 +268,27 @@ async function sendToTelegram(message,replyMarkup=null){
   const payload={chat_id,text:message,parse_mode:'HTML',disable_web_page_preview:true};
   if(threadRaw)payload.message_thread_id=Number(threadRaw);
   if(replyMarkup)payload.reply_markup=replyMarkup;
-  const res=await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{
-    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)
-  });
-  const body=await res.json();
-  if(!res.ok||!body.ok)throw Error('Telegram sendMessage failed: '+JSON.stringify(body).slice(0,250));
-  return body.result?.message_id;
+  let lastError;
+  for(let attempt=1;attempt<=3;attempt++){
+    try{
+      const res=await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{
+        method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)
+      });
+      const body=await res.json();
+      if(res.ok&&body.ok)return body.result?.message_id;
+      const error=new Error('Telegram sendMessage failed: '+JSON.stringify(body).slice(0,250));
+      if(res.status<500&&res.status!==429)throw error;
+      lastError=error;
+    }catch(error){
+      lastError=error;
+      if(/Telegram sendMessage failed/.test(error.message)&&!/error_code":(?:429|5\d\d)/.test(error.message))throw error;
+    }
+    if(attempt<3){
+      process.stderr.write('[telegram] send attempt '+attempt+' failed; retrying\n');
+      await new Promise(resolve=>setTimeout(resolve,attempt*3000));
+    }
+  }
+  throw lastError||new Error('Telegram sendMessage failed after retries');
 }
 
 export function parseMessageIds(value='') {
