@@ -7,7 +7,7 @@ on:
       - 'jobs-bot/**'
       - '.github/workflows/ooops-jobs.yml'
   schedule:
-    - cron: '0 6 * * *' # 09:00 Moscow time (UTC+3)
+    - cron: '7 6 * * *' # 09:07 Moscow time (UTC+3); avoids top-of-hour GitHub Actions delays
   workflow_dispatch:
     inputs:
       mode:
