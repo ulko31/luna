@@ -11,8 +11,6 @@ const PORTFOLIO_URL='https://ooops-portfolio.vercel.app/';
 const FRESHNESS_HOURS=72;
 const MAX_DIGEST_POSTS=18;
 const MAX_PER_CATEGORY=5;
-const DPROFILE_SOURCE='dprofilefreelance';
-const MIN_DPROFILE_POSTS=2;
 const CATEGORIES = [
   {name:'Автоматизация / интеграции',weight:6,rx:/автоматизац|интеграц|api\b|crm\b|workflow|n8n|make\.com|zapier|парсинг|парсер|скрипт|бота?\b|bot\b|webhook|рутинн|процесс[а-я]* бизнес/i},
   {name:'Разработка / сайты',weight:5,rx:/разработ|frontend|backend|fullstack|фронтенд|бэкенд|вёрстк|верстк|лендинг|landing|сайт|веб.?сервис|web.app|react|next\.js|node\.js|python|javascript|typescript|telegram mini|mini app|mvp\b/i},
@@ -191,25 +189,12 @@ export function selectDigestPosts(candidates,maxPosts=MAX_DIGEST_POSTS,maxPerCat
   if(!Number.isInteger(maxPosts)||maxPosts<1||!Number.isInteger(maxPerCategory)||maxPerCategory<1){
     throw new Error('Digest limits must be positive integers');
   }
-  const selected=[],selectedIds=new Set(),counts=new Map();
-  const add=post=>{
-    if(selected.length>=maxPosts||selectedIds.has(post.id))return false;
+  const selected=[],counts=new Map();
+  for(const post of candidates){
     const category=post.categories?.[0]||'Без категории';
     const count=counts.get(category)||0;
-    if(count>=maxPerCategory)return false;
-    selected.push(post);selectedIds.add(post.id);counts.set(category,count+1);
-    return true;
-  };
-  // Dprofile is a high-intent source. Reserve up to two places for its
-  // eligible fresh jobs before filling the rest by the global score.
-  let reserved=0;
-  for(const post of candidates){
-    if(post.source!==DPROFILE_SOURCE)continue;
-    if(add(post))reserved++;
-    if(reserved>=Math.min(MIN_DPROFILE_POSTS,maxPosts))break;
-  }
-  for(const post of candidates){
-    add(post);
+    if(count>=maxPerCategory)continue;
+    selected.push(post);counts.set(category,count+1);
     if(selected.length>=maxPosts)break;
   }
   return selected;
@@ -324,9 +309,6 @@ async function main(){
   }
   if(candidates.length===0)process.stderr.write('[warning] No matched posts. Check per-source status, freshness window and job filters.\n');
   const selected=selectDigestPosts(candidates);
-  const dprofileEligible=candidates.filter(post=>post.source===DPROFILE_SOURCE).length;
-  const dprofileSelected=selected.filter(post=>post.source===DPROFILE_SOURCE).length;
-  process.stderr.write('[dprofile] eligible '+dprofileEligible+'; selected '+dprofileSelected+'\n');
   const sourceNotice=dprofileSource?.status==='unavailable'
     ?'Источник Dprofile временно недоступен боту. Остальные каналы проверены независимо.'
     :dprofileSource?.status==='empty'
