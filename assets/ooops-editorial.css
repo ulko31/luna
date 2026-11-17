@@ -1,0 +1,69 @@
+/* OOOPS / Editorial Playground — additive visual layer, Nov 2026 */
+:root{--oo-lime:#d9fb45;--oo-violet:#9b64ec;--oo-ink:#191819;--oo-paper:#f7f2e9}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{overflow-x:hidden}
+.oo-scroll-line{position:fixed;top:0;left:0;width:100%;height:4px;z-index:9999;pointer-events:none;background:linear-gradient(90deg,var(--oo-lime),#bb8cf5);transform:scaleX(0);transform-origin:left}
+.oo-storyline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;margin:18px 0 25px}
+.oo-storyline:before{content:"";height:9px;width:9px;border-radius:50%;background:var(--oo-violet)}
+.oo-storyline:after{content:"";flex:1;height:1px;min-width:30px;background:currentColor;opacity:.27}
+.oo-playground-label{font-size:11px;letter-spacing:.18em;text-transform:uppercase;font-weight:900;display:inline-flex;align-items:center;gap:8px}
+.oo-playground-label:before{content:"✳";font-size:18px;color:var(--oo-violet)}
+/* Main page: keep the existing stacked cards and their real media */
+#work .section-head{position:relative}
+#work .section-head:after{content:"SELECTED WORK / 2026";display:inline-block;font-size:11px;font-weight:900;letter-spacing:.17em;margin:18px 0 25px}
+#work .projects{isolation:isolate}
+#work .project{transition:box-shadow .3s ease,border-radius .3s ease}
+#work .project:hover{box-shadow:0 35px 80px #1010112e;border-radius:22px}
+#work .project-copy{position:relative}
+#work .project-copy:before{content:"OOOPS! / SELECTED";position:absolute;top:21px;right:24px;font-size:9px;font-weight:900;letter-spacing:.12em;opacity:.6}
+#work .project h3{max-width:100%;overflow-wrap:anywhere}
+#work .project .case-link{display:inline-flex;align-items:center;gap:12px;border-radius:999px;background:#191819;color:#fff;text-decoration:none;padding:13px 20px;transition:transform .2s ease,background .2s ease,color .2s ease}
+#work .project .case-link:hover{transform:translateY(-3px);background:var(--oo-lime);color:#191819}
+#work .project-art:after{content:"";position:absolute;inset:0;border:1px solid #ffffff45;pointer-events:none;border-radius:inherit}
+#work .other-folder-card,#work .ooops-case-card{transition:transform .25s ease,box-shadow .25s ease}
+#work .other-folder-card:hover,#work .ooops-case-card:hover{box-shadow:0 22px 44px #14111b22}
+#work .other-card-copy{position:relative}
+#work .other-card-copy:after{content:"↗";position:absolute;right:16px;top:12px;font-size:22px;color:#191819;opacity:.6}
+/* Case detail: mixed editorial type + subtle graphic interventions */
+body.oo-case-page{--oo-case-bg:#f7f3ed}
+body.oo-case-page .hero{position:relative;isolation:isolate}
+body.oo-case-page .hero:before{content:"";position:absolute;z-index:-1;right:1%;top:6%;width:min(25vw,250px);height:min(25vw,250px);border:3px solid var(--oo-lime);border-radius:50%;transform:rotate(-20deg) scaleY(.57);opacity:.8;pointer-events:none}
+body.oo-case-page .hero .hero-top{border-bottom:1px solid #29252535;padding-bottom:17px}
+body.oo-case-page .hero h1{letter-spacing:-.075em;line-height:.88;text-wrap:balance;max-width:1100px}
+body.oo-case-page .hero-description{max-width:850px}
+body.oo-case-page .hero-footer .button,body.oo-case-page .end .button{border-radius:999px;background:var(--oo-lime);color:#171717;border:1px solid #171717;box-shadow:6px 6px 0 #171717;transition:transform .25s,box-shadow .25s}
+body.oo-case-page .hero-footer .button:hover,body.oo-case-page .end .button:hover{transform:translate(3px,3px);box-shadow:3px 3px 0 #171717}
+body.oo-case-page .big-visual{position:relative;background:color-mix(in srgb,var(--caseColor,#c6a3e8) 35%,#f5f1eb)!important;border-radius:24px!important;overflow:hidden}
+body.oo-case-page .big-visual:before{content:"OOOPS / VISUAL ARCHIVE";position:absolute;z-index:10;left:24px;top:23px;font-size:10px;font-weight:900;letter-spacing:.15em;color:#171717;background:var(--oo-lime);padding:7px 10px;pointer-events:none}
+body.oo-case-page .big-visual:after{content:"↗";position:absolute;z-index:10;right:16px;bottom:15px;width:36px;height:36px;display:grid;place-items:center;border:1px solid #171717;border-radius:50%;font-size:22px;background:#f7f3ed;pointer-events:none}
+body.oo-case-page .index-row{position:sticky;top:0;z-index:30;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);background:#f7f3edec;border-radius:0 0 16px 16px;border:1px solid #2222;padding:13px 18px;gap:12px}
+body.oo-case-page .index-row a{font-size:12px;letter-spacing:.015em;white-space:nowrap}
+body.oo-case-page .section{position:relative}
+body.oo-case-page .section .overline{display:inline-flex;gap:12px;align-items:center}
+body.oo-case-page .section .overline:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--oo-violet)}
+body.oo-case-page .section h2{font-weight:850;letter-spacing:-.065em;text-wrap:balance}
+body.oo-case-page #approach{background:linear-gradient(105deg,#f7f3ed 50%,#e6d5f55c 100%)}
+body.oo-case-page #solution{background:linear-gradient(125deg,#f7f3ed 70%,#d9fb4538 100%)}
+body.oo-case-page .gallery-stage{background:#f0e9dd;border-radius:24px;padding:clamp(12px,3vw,28px);border:1px solid #2222}
+body.oo-case-page .gallery-display{border-radius:16px;background:#faf7f2}
+body.oo-case-page .gallery-display img{transition:opacity .16s,transform .24s}
+body.oo-case-page .gallery-display img:hover{transform:scale(1.012)}
+body.oo-case-page .gallery-bar .arrow{font-weight:850;background:#191819;color:#fff;border:0}
+body.oo-case-page .gallery-bar .arrow:hover{background:var(--oo-lime);color:#191819}
+body.oo-case-page #outcome .impact{border-left:7px solid var(--oo-lime);padding-left:clamp(16px,3vw,40px)}
+body.oo-case-page .end{position:relative;overflow:hidden}
+body.oo-case-page .end:after{content:"OOOPS!";position:absolute;right:0;bottom:-.22em;opacity:.045;font-weight:900;font-size:clamp(115px,24vw,360px);letter-spacing:-.12em;pointer-events:none}
+.oo-case-marker{display:inline-flex;align-items:center;gap:9px;text-transform:uppercase;font-size:11px;letter-spacing:.15em;font-weight:850;color:#6e5d6d}
+.oo-case-marker:before{content:"";width:12px;height:12px;border:3px solid #191819;border-radius:50%;background:var(--oo-lime)}
+.oo-case-tools{display:flex;gap:8px;flex-wrap:wrap;padding:14px 0}
+.oo-case-tools a{border:1px solid #252225;border-radius:999px;background:#fff;padding:10px 16px;font-size:12px;font-weight:800;text-decoration:none}
+.oo-case-tools a:hover{background:var(--oo-lime)}
+@media(max-width:750px){
+ #work .project-copy:before{display:none}
+ body.oo-case-page .hero:before{width:90px;height:90px;right:3%;top:12%;opacity:.45}
+ body.oo-case-page .index-row{overflow-x:auto;flex-wrap:nowrap;top:0;scrollbar-width:none}
+ body.oo-case-page .big-visual:before{top:10px;left:10px;font-size:8px;padding:5px}
+ body.oo-case-page .big-visual:after{width:27px;height:27px;font-size:15px}
+}
+@media(prefers-reduced-motion:reduce){#work .project,#work .project .case-link,body.oo-case-page .gallery-display img{transition:none}}
